@@ -1,0 +1,10 @@
+# Excluir carpetas de compilación y temporales
+**/target/
+**/node_modules/
+**/.gradle/
+**/.mvn/
+**/.settings/
+**/.classpath
+**/.project
+**/*.log
+**/.idea/

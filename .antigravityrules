@@ -1,0 +1,4 @@
+- Cero explicaciones conceptuales a menos que se use el comando /explain.
+- No te disculpes por errores ni utilices saludos.
+- Devuelve única y exclusivamente el método o bloque modificado.
+- Usa "// ... código existente ..." para omitir fragmentos no alterados.

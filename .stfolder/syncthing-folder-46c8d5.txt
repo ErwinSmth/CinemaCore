@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: cinestar-workspace
+created: 2026-05-22T00:28:42-05:00

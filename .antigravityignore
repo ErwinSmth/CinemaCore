@@ -1,0 +1,9 @@
+target/
+build/
+*.jar
+.mvn/
+logs/
+*.log
+dumps/
+.git/
+.idea/
