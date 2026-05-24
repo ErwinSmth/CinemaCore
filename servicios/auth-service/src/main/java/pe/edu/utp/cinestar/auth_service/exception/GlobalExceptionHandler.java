@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
                                 .timestamp(LocalDateTime.now())
                                 .status(HttpStatus.NOT_FOUND.value())
                                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
-                                .message(ex.getMessage())
+                                .message("Usuario no encontrado")
                                 .path(request.getRequestURI())
                                 .build();
 
