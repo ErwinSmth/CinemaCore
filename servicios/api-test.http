@@ -1,0 +1,28 @@
+### Registrar usuario exitosamente
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+{
+  "email": "juan@utp.edu.pe",
+  "contrasena": "password123",
+  "nombres": "Juan",
+  "apellidos": "Perez"
+}
+
+## login con credenciales validas
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+{
+  "email": "juan@utp.edu.pe",
+  "contrasena": "password123"
+}
+
+
+## Login con credenciales invalidas
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+{
+  "email": "juan@utp.edu.pe",
+  "contrasena": "password123"
+}
+
