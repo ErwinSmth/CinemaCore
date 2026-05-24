@@ -1,0 +1,27 @@
+# Directorios de build y compilacion
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Control de versiones
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales y del sistema
+*.tmp
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Archivos de configuracion local
+*.env

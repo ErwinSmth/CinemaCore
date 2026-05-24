@@ -22,6 +22,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        System.out.println("Prueba de Docker");
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
