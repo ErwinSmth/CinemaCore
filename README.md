@@ -8,7 +8,7 @@ Este proyecto sigue un enfoque **Monorepo** para centralizar la lógica, la infr
 
 ### Componentes
 
-- **Orquestador / BFF (Backend For Frontend):** Implementado con **Node.js, TypeScript y Express**. Actúa como el punto de entrada, gestionando la seguridad (JWT) y la orquestación de llamadas entre servicios.
+- **Orquestador:** Implementado con **Node.js, TypeScript y Express**. Actúa como el punto de entrada, gestionando la seguridad (JWT) y la orquestación de llamadas entre servicios.
 - **Microservicios Core:** Implementados con **Java 17 (Spring Boot)** para lógica transaccional de alta consistencia.
 - **Infraestructura:** Orquestación centralizada mediante `docker-compose`.
 
@@ -25,16 +25,24 @@ Este proyecto sigue un enfoque **Monorepo** para centralizar la lógica, la infr
 
 ## Instrucciones de Inicio Rapido
 
-1. Levantar la infraestructura (Base de Datos):
+### 1. Levantar la infraestructura (Base de Datos)
 
-   ```bash
-   cd cinestar-infra
-   docker-compose up -d
+```bash
+cd infra
+docker-compose up -d
+```
 
-   ```
+### 2. Ejecutar el API Gateway (Node.js)
 
-2. Ejecutar en un servicio individual:
-   ```bash
-   cd servicios/auth-service
-   .\mvnw clean spring-boot:run
-   ```
+```bash
+cd servicios/api-gateway
+npm install
+npm run dev
+```
+
+### 3. Ejecutar un servicio individual (Java)
+
+```bash
+cd servicios/auth-service
+.\mvnw clean spring-boot:run
+```
