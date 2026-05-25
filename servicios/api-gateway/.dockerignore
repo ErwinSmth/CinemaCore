@@ -1,0 +1,27 @@
+# Dependencias locales de Node — nunca van al contenedor
+node_modules/
+
+# Artefactos de compilacion del host — Docker los genera internamente, no se necesitan del host
+dist/
+
+# Variables de entorno locales — se inyectan en runtime via docker-compose o secretos
+.env
+.env.*
+
+# Archivos de configuracion del editor e IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de CI/CD y documentacion
+.github/
+*.md
