@@ -9,29 +9,30 @@ const authHttpClient: AxiosInstance = axios.create({
 });
 
 // se define la estructura de datos que esperamos recibir de java
-export interface TokenValidationResponse {
-  valid: boolean;
-  userId: string;
-  role: string;
+export interface AuthResponse {
+  token: string;
+  email: string;
+  roles: string[];
 }
 
-// funcion que valida el token con el servicio de autenticacion
-// @param JWT recibido del usuario
-// @return respuesta validada del auth service
-export const validateToken = async (token: string): Promise<TokenValidationResponse> => {
+// funcion que autentica al usuario con el servicio de java
+// @param email y contrasena recibidos del usuario
+// @return respuesta con el token JWT
+export const loginUser = async (email: string, contrasena: string): Promise<AuthResponse> => {
   try {
     // realizamos un POST hacia el endpoint de validacion
-    const { data } = await authHttpClient.post<TokenValidationResponse>(
+    const { data } = await authHttpClient.post<AuthResponse>(
       '/api/auth/login',
-      { token }
+      { email, contrasena }
     );
     return data; // retornamos los datos si todo sale bien
   } catch (error) {
     // manero de errores de comunicacion o respuestas de error en Java
-    const axiosError = error as AxiosError;
-    const status = axiosError.response?.status;
-    if (status === 401 || status === 403) {
-      throw new Error('Token inválido o sin permisos');
+    const axiosError = error as AxiosError<{ message?: string }>;
+    if (axiosError.response) {
+      // extrae el mensaje de la clase ErrorResponse de Java (ej. "Credenciales inválidas")
+      const serverMessage = axiosError.response.data?.message || 'Error de autenticación';
+      throw new Error(serverMessage);
     }
     throw new Error('Servicio de Autenticacion no disponible');
   }

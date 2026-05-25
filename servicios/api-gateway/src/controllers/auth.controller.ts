@@ -1,25 +1,19 @@
 import { Request, Response } from 'express';
-import { validateToken } from '../clients/auth.client';
+import { loginUser } from '../clients/auth.client';
 
 // controlador de autenticacion
 // su unica funcion es recibir la peticion del front
 // orquesta la llamada y responde al cliente
-export const getMe = async (req: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
+    // extrae email y contrasena del cuerpo de la peticion
+    const { email, contrasena } = req.body;
 
-    // extrae el token del encabezado de la peticion
-    const authHeader = req.headers['authorization'] as string;
-    const token = authHeader.split(' ')[1] as string;
+    // delega el login al auth.client.ts
+    const userSession = await loginUser(email, contrasena);
 
-    // delega la validacion al auth.client.ts
-    const userSession = await validateToken(token);
-
-    // respuesta exitosa al frontend
-    res.status(200).json({
-      userId: userSession.userId,
-      role: userSession.role,
-      valid: userSession.valid,
-    });
+    // respuesta exitosa al frontend con el token y datos
+    res.status(200).json(userSession);
   } catch (error) {
 
     // manejo de errores centralizado
