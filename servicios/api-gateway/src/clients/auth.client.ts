@@ -8,6 +8,14 @@ const authHttpClient: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// clase custom para preservar el status code del microservicio
+export class HttpError extends Error {
+  constructor(public statusCode: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
 // se define la estructura de datos que esperamos recibir de java
 export interface AuthResponse {
   token: string;
@@ -30,10 +38,38 @@ export const loginUser = async (email: string, contrasena: string): Promise<Auth
     // manero de errores de comunicacion o respuestas de error en Java
     const axiosError = error as AxiosError<{ message?: string }>;
     if (axiosError.response) {
-      // extrae el mensaje de la clase ErrorResponse de Java (ej. "Credenciales inválidas")
+      // extrae el mensaje de la clase ErrorResponse de Java y su status real
       const serverMessage = axiosError.response.data?.message || 'Error de autenticación';
-      throw new Error(serverMessage);
+      throw new HttpError(axiosError.response.status, serverMessage);
     }
-    throw new Error('Servicio de Autenticacion no disponible');
+    throw new HttpError(503, 'Servicio de Autenticacion no disponible');
+  }
+};
+
+// estructura del cuerpo del registro
+export interface RegisterRequest {
+  email: string;
+  contrasena: string;
+  nombres: string;
+  apellidos: string;
+}
+
+// funcion que registra un nuevo usuario en el servicio de java
+// @param datos del formulario de registro
+// @return respuesta con el token JWT y datos del usuario
+export const registerUser = async (payload: RegisterRequest): Promise<AuthResponse> => {
+  try {
+    const { data } = await authHttpClient.post<AuthResponse>(
+      '/api/auth/register',
+      payload
+    );
+    return data;
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    if (axiosError.response) {
+      const serverMessage = axiosError.response.data?.message || 'Error en el registro';
+      throw new HttpError(axiosError.response.status, serverMessage);
+    }
+    throw new HttpError(503, 'Servicio de Autenticacion no disponible');
   }
 };

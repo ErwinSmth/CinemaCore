@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { loginUser } from '../clients/auth.client';
+import { loginUser, registerUser, HttpError } from '../clients/auth.client';
 
 // controlador de autenticacion
 // su unica funcion es recibir la peticion del front
@@ -16,9 +16,30 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(userSession);
   } catch (error) {
 
-    // manejo de errores centralizado
+    // manejo de errores centralizado (usando el custom HttpError)
+    const status = error instanceof HttpError ? error.statusCode : 500;
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    const status = message.includes('no disponible') ? 503 : 401;
+    res.status(status).json({ error: message });
+  }
+};
+
+// controlador de registro
+// recibe los datos del formulario y delega al cliente HTTP
+export const register = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // extrae los campos del cuerpo de la peticion
+    const { email, contrasena, nombres, apellidos } = req.body;
+
+    // delega el registro al auth.client.ts
+    const newUser = await registerUser({ email, contrasena, nombres, apellidos });
+
+    // respuesta 201 Created con el token y datos del nuevo usuario
+    res.status(201).json(newUser);
+  } catch (error) {
+
+    // manejo de errores centralizado
+    const status = error instanceof HttpError ? error.statusCode : 500;
+    const message = error instanceof Error ? error.message : 'Error desconocido';
     res.status(status).json({ error: message });
   }
 };
