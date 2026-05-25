@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { env } from './config/env'; // se importa la configuracion validada
+import authRoutes from './routes/auth.routes';
 
 // creamos la instancia de la aplicacion express
 const app = express();
@@ -17,6 +18,9 @@ app.use(express.json());
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'API Gateway esta activa' });
 });
+
+// --- Rutas ---
+app.use('/auth', authRoutes);
 
 // --- Inicio del Servidor ---
 // Vincula la apliacion al puerto definido en el archivo .env

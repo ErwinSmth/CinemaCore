@@ -22,7 +22,7 @@ export const validateToken = async (token: string): Promise<TokenValidationRespo
   try {
     // realizamos un POST hacia el endpoint de validacion
     const { data } = await authHttpClient.post<TokenValidationResponse>(
-      '/api/auth/validate',
+      '/api/auth/login',
       { token }
     );
     return data; // retornamos los datos si todo sale bien
