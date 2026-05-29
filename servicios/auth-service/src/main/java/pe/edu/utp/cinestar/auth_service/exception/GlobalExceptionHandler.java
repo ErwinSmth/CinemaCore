@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // Interceptador de excepciones a nivel de controlador
 // formatea las respuestas en un JSON limpio
-@RestControllerAdvice
+@RestControllerAdvice // le dico a Spring que esta clase maneja las excepciones de todos los
+                      // controladores
 public class GlobalExceptionHandler {
 
         // Captura errores de validacion de los DTOS (@Valid, @NotBlank, etc)

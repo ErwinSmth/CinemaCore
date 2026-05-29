@@ -43,7 +43,8 @@ public class AuthService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Rol 'ROLE_CLIENTE' no encontrado en la base de datos"));
 
-                // creacion de la entidad, aqui se hashea la clave
+                // creacion y mapeo del objeto request a una entidad usuario, aqui se hashea la
+                // clave
                 UserEntity user = UserEntity.builder()
                                 .nombres(request.getNombres())
                                 .apellidos(request.getApellidos())
