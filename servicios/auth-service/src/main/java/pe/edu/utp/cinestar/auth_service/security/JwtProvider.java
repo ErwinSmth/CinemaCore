@@ -15,8 +15,8 @@ import java.util.Set;
 // Componente de seguridad encargado del ciclo de vida de los JWT
 // Fabrica tokens con credenciales, y valida que no hayan sido alterados en el camino
 // asi como descifra la identidad del portador
-@Slf4j
-@Component
+@Slf4j // anotacion de lombok para usar en logs para errores
+@Component // anotacion de spring para utilidades
 public class JwtProvider {
 
     // Llave secreta y tiempo de vida util del jwt desde el archivo .properties
@@ -59,7 +59,8 @@ public class JwtProvider {
         return false;
     }
 
-    // descifra el jwt y extrae el correo electronico
+    // metodo a ser usado luego por el Filtro de Token despues de validar el jwt
+    // para dejar ingresar al sistema al usuario con ese correo
     public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey()) // usa la llave para descifrar

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/mimo-v2-free",
+  "provider": {
+    "opencode": {},
+    "nvidia": {}
+  },
+  "watcher": {
+    "ignore": [
+      "**/target/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.git/**",
+      "**/logs/**",
+      "**/*.log",
+      "**/Dockerfile",
+      "**/docker-compose*.yml"
+    ]
+  },
+  "compaction": {
+    "enabled": true,
+    "auto": true,
+    "threshold": 0.75
+  },
+  "agents": {
+    "coder": {
+      "model": "nvidia/kimi-k2.6"
+    },
+    "task": {
+      "model": "opencode/mimo-v2-free"
+    }
+  },
+  "permission": {
+    "allow": [
+      "bash(git *)",
+      "bash(npm *)",
+      "bash(mvn *)",
+      "bash(docker *)",
+      "bash(ls *)",
+      "bash(cat *)"
+    ],
+    "deny": []
+  }
+}

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.List;
 
 // Filtro de seguridad que se ejecuta una vez por cada peticion HTTP que ingresa
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
