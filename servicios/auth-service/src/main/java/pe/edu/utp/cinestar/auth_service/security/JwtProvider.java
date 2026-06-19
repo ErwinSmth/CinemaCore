@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 // Componente de seguridad encargado del ciclo de vida de los JWT
@@ -68,5 +69,15 @@ public class JwtProvider {
                 .parseClaimsJws(token) // abre el token
                 .getBody() // obtiene los datos del token
                 .getSubject(); // retorna el email
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", List.class);
     }
 }

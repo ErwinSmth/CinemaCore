@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -14,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // Filtro de seguridad que se ejecuta una vez por cada peticion HTTP que ingresa
 @Component
@@ -33,13 +35,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // si existe token y el jwtprovider valida que es valido
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
-            // se obtiene el email incrustado en el token
+            // se obtiene el email y roles incrustados en el token
             String email = jwtProvider.getEmailFromToken(token);
+            List<String> roles = jwtProvider.getRolesFromToken(token);
+
+            // se convierte la lista de roles a GrantedAuthority de Spring Security
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
             // se crea el objeto de autenticacion
             // esto le dice al back que el usuario esta autenticado
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null,
-                    List.of()); // los roles vendran en el futuro
+                    authorities);
 
             // se guarda la informacion del usuario para que
             // toda la aplicacion conozca quien es el usuario
