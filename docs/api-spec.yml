@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: CinemaCore API
+  description: >
+    API Gateway specification for the CinemaCore Microservices ecosystem. 
+    This acts as the single source of truth for frontend-backend contracts.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: API Gateway Entry Point
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  # ==========================================
+  # AUTHENTICATION SERVICE
+  # ==========================================
+  /auth/register:
+    post:
+      summary: Registra un nuevo usuario cliente
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, lastName]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '409':
+          description: Correo electrónico ya existe
+
+  /auth/login:
+    post:
+      summary: Inicia sesión y obtiene un JWT
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  type:
+                    type: string
+                  expiresIn:
+                    type: integer
+        '401':
+          description: Credenciales inválidas
+
+  # ==========================================
+  # MOVIE SERVICE
+  # ==========================================
+  /movies/search:
+    get:
+      summary: Busca películas en TMDB
+      tags: [Movies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de resultados de TMDB
+          
+  /movies/tmdb/{tmdbId}:
+    get:
+      summary: Obtiene detalles completos de TMDB para curación
+      tags: [Movies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tmdbId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle completo de la película
+
+  /movies:
+    get:
+      summary: Obtiene la cartelera activa
+      tags: [Movies]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            default: CARTELERA
+      responses:
+        '200':
+          description: Películas activas en cartelera
+    post:
+      summary: Guarda una película curada en la BD local
+      tags: [Movies]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tmdbId:
+                  type: integer
+                title:
+                  type: string
+                runtime:
+                  type: integer
+                ageRating:
+                  type: string
+                status:
+                  type: string
+                details:
+                  type: object
+      responses:
+        '201':
+          description: Película guardada localmente
+
+  # ==========================================
+  # SHOWTIME SERVICE
+  # ==========================================
+  /showtimes:
+    get:
+      summary: Obtiene funciones disponibles por fecha
+      tags: [Showtimes]
+      parameters:
+        - name: fecha
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de funciones programadas
+    post:
+      summary: Programa una nueva función
+      tags: [Showtimes]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movie_id:
+                  type: string
+                  format: uuid
+                sala_id:
+                  type: string
+                  format: uuid
+                proyeccion_id:
+                  type: integer
+                fecha_inicio:
+                  type: string
+                  format: date-time
+                precio_ticket:
+                  type: number
+      responses:
+        '201':
+          description: Función programada y asientos pre-generados
+        '409':
+          description: Solapamiento de horarios en la misma sala
+
+  # ==========================================
+  # SEAT SERVICE
+  # ==========================================
+  /seats:
+    get:
+      summary: Obtiene el mapa de butacas de una función
+      tags: [Seats]
+      parameters:
+        - name: funcionId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mapa de butacas y su estado actual
+
+  /seats/lock:
+    post:
+      summary: Bloquea un asiento temporalmente
+      tags: [Seats]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Asiento bloqueado con éxito
+        '409':
+          description: Asiento ya fue tomado por otro usuario (OptimisticLockException)

@@ -1,179 +1,656 @@
-📄 DOCUMENTO DE ARQUITECTURA: Flujo de Gestión de Cartelera (Movie Service)
-Fase 1: La Búsqueda Externa (El Administrador explora)
-Intención: El Administrador del cine ingresa a su panel privado (Web Admin) y navega a la sección "Agregar* Nueva Pel*ícula".
-Acción: Ingresa el nombre de la película (ej. "Obsesión") en la barra de búsqueda.
-Por debajo (Back/Front): El Frontend envía esta palabra al Backend. El Backend actúa como puente y le pregunta al catálogo mundial (TMDB). TMDB le devuelve una lista general de coincidencias, que el Backend reenvía al Frontend.
-Resultado Visual: El Administrador ve en su pantalla una cuadrícula con varias opciones de películas que coinciden con ese nombre, mostrando el año y la portada básica para ayudarle a diferenciar (ej. "Obsesión de 1976" vs "Obsesión de 2026").
-Fase 2: La Selección y Curación Local (El Administrador personaliza)
-Acción: El Administrador identifica la película correcta y hace clic en ella (botón "Importar al Cine").
-Por debajo (Back/Front): El Backend va rápidamente a TMDB y descarga absolutamente todo sobre esa película específica (elenco completo, docenas de portadas, todos los trailers disponibles).
-Resultado Visual (Formulario de Curación): La pantalla del Administrador cambia. Ahora ve un formulario pre-llenado donde:
-El título y la sinopsis ya están escritos automáticamente (pero puede corregirlos si lo desea).
-Selecciona de una galería cuál será el Póster Oficial para el cine.
-Marca qué Trailers se mostrarán.
-Aporte Local (Crucial): El Administrador elige en un menú desplegable la Restricción de Edad según la ley peruana (APT, +14, +18) y define el Estado de la película (Ej. "PRE-ESTRENO" o "CARTELERA").
-Fase 3: La Persistencia (Guardado en la Base de Datos)
-Acción: El Administrador hace clic en "Guardar en Base de Datos".
-Por debajo (Back/Front): El Frontend empaqueta solo las decisiones finales del Administrador y las envía al Backend.
-Impacto en BD (**db_movies**): El Backend guarda esta información de forma definitiva en tu base de datos PostgreSQL local. Los datos de búsqueda rápida (título, duración, estado, llave foránea de edad) van a columnas tradicionales, mientras que el resto de información variable (urls de la imagen elegida, urls de los trailers, actores) se comprime y guarda dentro de la columna inteligente JSONB.
-A partir de este momento, el cine es dueño de su información y ya no depende de TMDB para saber qué proyectar.
-Fase 4: La Visualización del Cliente (Consumo Optimizado)
-Intención: Un Cliente final (usuario normal) ingresa a la página pública de Cinestar (www.cinestar.com) desde su celular para ver qué hay hoy en el cine.
-Por debajo (Back/Front): El Frontend del cliente le pide al Backend únicamente las películas cuyo estado local sea "CARTELERA".
-Respuesta Rápida: El Backend (Movie Service) hace una consulta rapidísima a la base de datos, toma el JSONB de las películas y se lo envía al celular del cliente. El Backend no envía imágenes pesadas, solo envía texto y enlaces.
-Resultado Visual: El celular del cliente recibe los enlaces y, usando el internet del propio cliente, descarga las imágenes directamente desde los servidores de TMDB. El cliente ve una cartelera fluida, hermosa, con el elenco y trailers, mientras que tu servidor Backend se mantiene totalmente relajado y sin gastar ancho de banda excesivo.
-Documento Tecnico de Respuesta de la Api de TMDB
-Fase 1: Petición de Búsqueda (Search)
-Objetivo: Obtener una lista de coincidencias según lo que el Administrador escribió en el buscador.
+DESCRIPCION DEL PROYECTO 
 
-Endpoint (Ruta): GET https://api.themoviedb.org/3/search/movie
+Este proyecto propone el desarrollo de un sistema web basado en microservicios para la gestión de venta de entradas de cine, integrando funcionalidades como cartelera, programación de funciones, selección de asientos y autenticación de usuarios. La solución busca optimizar la experiencia del cliente y mejorar la eficiencia operativa mediante el uso de tecnologías modernas como APIs REST, tokens JWT y procesamiento en tiempo real. Además, se enfoca en garantizar la seguridad, escalabilidad y disponibilidad del sistema. 
 
-Parámetros (Query Params): api_key={TU_CLAVE}&query=obsesion&language=es-MX
+Tecnologías Utilizadas 
 
-1. ¿Cómo te responde TMDB? (Ejemplo JSON simplificado)
-Te devuelve un objeto con un arreglo llamado results.
+Componente 
 
-{
-  "page": 1,
-  "results": [
-    {
-      "id": 1339713,
-      "title": "Obsesión",
-      "release_date": "2026-04-16",
-      "poster_path": "/rmCkNtzYR2xTOO3ZXmIqB5zgYdE.jpg"
-    },
-    {
-      "id": 4780,
-      "title": "Obsession",
-      "release_date": "1976-08-01",
-      "poster_path": "/9160yxML0m3XiBdwdfrJwBlS356.jpg"
-    }
-  ]
-}
-2. ¿Qué dato NECESITAS de aquí para la segunda petición?
-Lo único que tu sistema necesita capturar cuando el Administrador haga clic en una película de esta lista es el **id** (ejemplo: 1339713). Ese número es la llave para traer todo lo demás.
+Tecnología 
 
-Fase 2: Petición de Detalle Completo (Details + Append)
-Objetivo: Traer toda la información de la película seleccionada en un solo viaje.
+Descripción 
 
-Endpoint (Ruta): GET https://api.themoviedb.org/3/movie/1339713
+Backend 
 
-Parámetros (Query Params): api_key={TU_CLAVE}&language=es-MX&append_to_response=credits,videos,images
+Spring Boot 
 
-1. ¿Cómo te responde TMDB? (Ejemplo JSON Estructural)
-{
-  "id": 1339713,
-  "title": "Obsesión",
-  "overview": "Tras romper el misterioso Sauce de un Deseo...",
-  "release_date": "2026-04-16",
-  "runtime": 120,
-  "credits": {
-    "cast": [
-      {
-        "name": "Tom Holland",
-        "character": "Peter Parker"
-      }
-    ],
-    "crew": [
-      {
-        "name": "Jon Watts",
-        "job": "Director"
-      }
-    ]
-  },
-  "videos": {
-    "results": [
-      {
-        "name": "Trailer Oficial Subtitulado",
-        "key": "1mTjfMFyPi8",
-        "site": "YouTube",
-        "type": "Trailer"
-      }
-    ]
-  },
-  "images": {
-    "posters": [
-      {
-        "file_path": "/rmCkNtzYR2xTOO3ZXmIqB5zgYdE.jpg"
-      }
-    ]
-  }
-}
-2. Lista Exacta de Datos a Extraer (Mapeo)
-Esta es la lista de campos que tu Backend debe leer de ese JSON:
+Framework para el desarrollo de APIs REST, permite crear servicios escalables, seguros y de alto rendimiento. 
 
-**id** (Número): El identificador único de TMDB.
-**title** (String): El Título oficial de la película en español.
-**overview** (String): La Sinopsis completa.
-**runtime** (Número): La Duración en minutos (vital para el Showtime Service).
-**release_date** (String): La Fecha de estreno (formato YYYY-MM-DD).
-**credits.cast[].name** (String): Nombres de los actores principales (puedes tomar los primeros 3 o 5 elementos del arreglo cast).
-**credits.crew[].name** (String): Nombre del director. Tienes que iterar el arreglo crew y buscar el objeto donde el campo job sea exactamente igual a "Director".
-Fase 3: Reconstrucción de Recursos Multimedia (¡Lo más importante!)
-TMDB nunca te dará la URL lista para usar. Tu Backend tiene que armarla concatenando textos. Aquí tienes las fórmulas exactas que programarás:
+Frontend 
 
-A. Construcción de la URL de Portadas (Imágenes)
-De la respuesta anterior, vas al bloque "images" -> "posters". Extraes el valor de **file_path** (ej. "/rmCkNtzYR2xTOO3ZXmIqB5zgYdE.jpg").
+Angular + CSS 
 
-Fórmula: [BASE_URL] + [TAMAÑO] + [FILE_PATH]
-Componentes:
-BASE_URL: Siempre será https://image.tmdb.org/t/p/
-TAMAÑO: Para web, el estándar recomendado es w500 (500 píxeles de ancho). Si la quieres original pon original.
-Código/String Final Generado:https://image.tmdb.org/t/p/w500/rmCkNtzYR2xTOO3ZXmIqB5zgYdE.jpg
-B. Construcción de la URL de Trailers (Videos)
-De la respuesta anterior, vas al bloque "videos" -> "results". Aquí es obligatorio aplicar un filtro por código antes de armar la URL:
+Framework para construir interfaces dinámicas y responsivas, junto con CSS para el diseño visual. 
 
-Filtro: Iteras el arreglo y solo te quedas con los objetos donde site == "YouTube" Y type == "Trailer".
-Una vez filtrado, extraes el valor de **key** (ej. "1mTjfMFyPi8").
-Fórmula: [URL_YOUTUBE] + [KEY]
-Componentes:
-URL_YOUTUBE: Siempre será https://www.youtube.com/watch?v=
-Código/String Final Generado:https://www.youtube.com/watch?v=1mTjfMFyPi8
-📄 Documentación: Estrategia de Concurrencia y Reserva de Asientos
-![[Pasted image 20260602132326.png]]
+Base de Datos 
 
-1. El Ciclo de Vida del Ticket (Pre-generación)
-Regla de Arquitectura: Los registros en la tabla tickets NO se crean en el momento en que el usuario hace clic en un asiento.
+PostgreSQL 
 
-¿Cuándo se crean? Se pre-generan en bloque en el momento en que el Administrador crea la función (Showtime).
-Ejemplo: Si el Admin programa Spider-Man en la Sala 1 (100 butacas), el sistema hace un INSERT de 100 filas en la tabla tickets automáticamente.
-Estado Inicial: Todas las filas nacen con user_id = null, status = 'AVAILABLE' y version = 0.
-Beneficio: Al pre-existir la fila, cuando múltiples usuarios intentan comprar al mismo tiempo, el sistema solo compite por hacer un UPDATE, permitiendo que las herramientas de bloqueo de la base de datos funcionen a la perfección.
-2. Anatomía de las Columnas Especiales
-La tabla tickets posee 3 columnas encargadas de orquestar la transacción:
+Sistema de gestión de bases de datos relacional, robusto y confiable para el almacenamiento de información. 
 
-A. status (El Semáforo del Negocio)
-Qué es: Es una etiqueta de texto (AVAILABLE, LOCKED, SOLD).
-Para qué sirve: Le indica al Frontend de qué color pintar la butaca (Verde = Libre, Amarillo = En proceso de pago, Gris = Vendido). A la base de datos no le importa el valor de este texto.
-B. version (El Escudo de la Base de Datos - Optimistic Locking)
-Qué es: Es un contador numérico interno controlado nativamente por JPA/Hibernate (@Version).
-Para qué sirve: Impide matemáticamente que dos transacciones modifiquen la misma fila al mismo tiempo. Es invisible para el Frontend y para el usuario.
-¿Es lo mismo que el **status**?: NO. * Analogía del Baño Público: El status es el letrero de plástico por fuera que dice "Libre / Ocupado" (para que la gente lo vea). La version es la cerradura de metal por dentro que traba la puerta e impide físicamente que alguien más entre (para evitar choques).
-C. locked_until (El Temporizador de Abandono)
-Qué es: Un campo de fecha y hora (TIMESTAMP).
-Para qué sirve: Define el tiempo límite que un asiento puede permanecer en estado LOCKED. Si el usuario no completa el pago (ej. cierra el navegador), el Backend utilizará esta hora para saber si ya pasaron los 5 minutos de gracia y puede devolver la butaca a estado AVAILABLE.
-3. Caso Práctico de Colisión: El Escenario "Juan vs. María"
-¿Qué sucede cuando dos personas intentan comprar la misma butaca en el mismo milisegundo?
+Contenedores 
 
-Minuto 0: El Escenario
+Docker 
 
-Juan y María están en sus casas viendo la cartelera.
-Ambos ven el asiento "G-14" en color verde.
-Su Frontend tiene el dato en memoria: Asiento G-14 | status: AVAILABLE | version: 1.
-Minuto 1: El Choque (Race Condition)
+Plataforma que permite empaquetar y ejecutar los servicios en contenedores, facilitando su despliegue y escalabilidad. 
 
-Ambos hacen clic en "Comprar G-14" casi al unísono. Hay solo 2 milisegundos de diferencia entre la petición de Juan y la de María.
-Resolución en el Backend (PostgreSQL + Spring Boot):
+ 
 
-Petición de Juan (Llega primero):
-El Backend envía a la BD: "Actualiza el asiento G-14 a LOCKED, suma 5 min a locked_until, y cambia la versión a 2, SOLO SI la versión actual sigue siendo 1".
-PostgreSQL dice: "La versión es 1. Perfecto. Filas actualizadas: 1".
-Resultado: Juan avanza a la pasarela de pagos.
-Petición de María (Llega 2 milisegundos tarde):
-El Backend envía la misma orden exacta: "Actualiza el asiento G-14 a LOCKED, y cambia la versión a 2, SOLO SI la versión actual sigue siendo 1".
-PostgreSQL busca el asiento G-14 con versión 1. Pero ya no lo encuentra, porque Juan lo acaba de cambiar a versión 2.
-PostgreSQL responde: "Filas actualizadas: 0".
-La Excepción:
-Spring Boot detecta que se afectaron 0 filas y lanza una OptimisticLockException.
-El Backend intercepta este error y le devuelve una respuesta limpia al Frontend de María: "Lo sentimos, este asiento acaba de ser tomado por otro usuario".
+FASE I: ANÁLISIS DE REQUERIMIENTOS: SISTEMA DE CINE 
 
+I. ACTORES DEL SISTEMA Y NECESIDADES 
+
+ACTOR 
+
+NECESIDAD PRINCIPAL 
+
+IMPACTO EN EL NEGOCIO 
+
+Cliente / Usuario Final 
+
+Consultar la cartelera actualizada, horarios disponibles y seleccionar asientos en tiempo real sin errores de duplicidad. 
+
+Incremento en las ventas digitales y mejora drástica en la experiencia de usuario (UX). 
+
+Administrador de Cine 
+
+Gestionar el catálogo de películas (Movie Service) y configurar la asignación de salas y horarios (Showtime Service). 
+
+Optimización de la ocupación de las salas y control eficiente de la oferta comercial. 
+
+Taquillero (Personal de Local) 
+
+Acceso inmediato al inventario de asientos para ventas presenciales y validación de estados (Disponible/Vendido). 
+
+Reducción de colas en el cine físico y sincronización total con la venta online para evitar colisiones. 
+
+Sistema de Pagos Externo 
+
+Comunicación mediante API para confirmar transacciones y liberar o confirmar el bloqueo de asientos. 
+
+Seguridad financiera y reducción de "asientos perdidos" por procesos de pago inconclusos. 
+
+ 
+
+I.II ARQUITECTURA DE SERVICIOS AUTÓNOMOS 
+
+Para el correcto funcionamiento del sistema de venta de entradas, se ha planteado una arquitectura basada en servicios que permite dividir las responsabilidades y mejorar la eficiencia operativa. Cada servicio cumple una función específica dentro del sistema, facilitando la gestión de la información, la escalabilidad y la disponibilidad en tiempo real. 
+
+Esta estructura permite que los diferentes componentes trabajen de manera independiente pero integrada, asegurando una mejor experiencia para el usuario, así como una mayor capacidad de respuesta ante cambios en la demanda. A continuación, se describen los principales servicios que conforman el sistema. 
+
+I.II.I Authentication Service (Servicio de Autenticación / Login) 
+
+Función: Gestiona el proceso de autenticación de usuarios (Cliente, Administrador y Taquillero), validando credenciales y generando tokens de acceso seguros para el uso del sistema. 
+
+Dinamismo: Utiliza el estándar OAuth 2.0 y tokens JWT para permitir autenticación sin estado (stateless), garantizando seguridad, escalabilidad y control de acceso en tiempo real entre los diferentes servicios del sistema. 
+
+I.II.II Movie Service (servicio de películas) 
+
+Función: Gestiona metadatos, sinopsis y recursos multimedia de la cartelera de forma centralizada. 
+
+Dinamismo: Provee consultas de alta velocidad mediante bases documentales y capas de caché para respuestas instantáneas. 
+
+I.II.III Showtime Service (Servicio de Funciones) 
+
+Función: Vincula películas con salas, horarios y tipos de tecnología (2D, 3D, IMAX) disponibles. 
+
+Dinamismo: Cruza la disponibilidad de salas con el catálogo para generar y ajustar la oferta comercial diaria. 
+
+        I.II.IV Seat Inventory Service (Servicio de asientos) 
+
+Función: Administra la distribución física y el estado de cada asiento (Disponible/Ocupado) en tiempo real. 
+
+ 
+
+ 
+
+I.III REQUERIMIENTOS DEL SISTEMA 
+
+I.III.I Requerimientos Funcionales (RF) 
+
+1. Authentication Service (Servicio de Autenticación / Login) 
+
+ID 
+
+Requerimiento Específico 
+
+Descripción 
+
+RF-01 
+
+Registro de Usuarios 
+
+El sistema debe permitir el registro de nuevos usuarios con datos básicos y credenciales. 
+
+RF-02 
+
+Inicio de Sesión 
+
+Permitir a los usuarios autenticarse mediante usuario y contraseña. 
+
+RF-03 
+
+Validación de Credenciales 
+
+Verificar que las credenciales ingresadas sean correctas antes de otorgar acceso. 
+
+RF-04 
+
+Generación de token JWT 
+
+Generar un token de acceso seguro (JWT) al iniciar sesión correctamente. 
+
+RF-05 
+
+Gestión de Roles 
+
+Asignar y validar roles de usuario (Administrador, Cliente, Taquillero). 
+
+RF-06 
+
+Cierre de Sesión 
+
+Permitir al usuario cerrar sesión invalidando su token de acceso. 
+
+ 
+
+2. Movie Service (Servicio de Películas) 
+
+ID 
+
+Requerimiento Específico 
+
+Descripción 
+
+RF-07 
+
+Registro de Películas 
+
+El sistema debe permitir registrar títulos, sinopsis, duración y clasificación. 
+
+RF-08 
+
+Actualización de Contenido 
+
+Permitir editar información de películas y recursos multimedia. 
+
+RF-09 
+
+Eliminación de Películas 
+
+Permitir eliminar películas que ya no estén en cartelera. 
+
+RF-10 
+
+Gestión de Multimedia 
+
+Permitir cargar imágenes, trailers y contenido relacionado. 
+
+RF-11 
+
+Consulta de Cartelera 
+
+Permitir listar películas disponibles en tiempo real. 
+
+RF-12 
+
+Búsqueda y Filtro 
+
+Permitir filtrar películas por género, duración o clasificación. 
+
+RF-13 
+
+Cacheo de Consultas 
+
+Proveer consultas rápidas mediante almacenamiento en caché. 
+
+ 
+
+ 
+
+3. Showtime Service(Servicio de funciones) 
+
+ID 
+
+Requerimiento Específico 
+
+Descripción 
+
+RF-14 
+
+Creación de Funciones 
+
+Permitir programar funciones asignando película, sala y horario. 
+
+RF-15 
+
+Modificación de Funciones 
+
+Permitir actualizar horarios o salas de funciones existentes. 
+
+RF-16 
+
+Eliminación de Funciones 
+
+Permitir eliminar funciones programadas. 
+
+RF-17 
+
+Validación de Horarios 
+
+Evitar traslapes de horarios en una misma sala. 
+
+RF-18 
+
+Asignación de Tecnología 
+
+Permitir definir tipo de proyección (2D, 3D, IMAX). 
+
+RF-19 
+
+Consulta de Funciones 
+
+Permitir visualizar funciones disponibles por fecha y película. 
+
+ 
+
+4.Seat Inventory Service (Servicio de Reserva de asientos) 
+
+ID 
+
+Requerimiento Específico 
+
+Descripción 
+
+RF-20 
+
+Visualización de Asientos 
+
+Mostrar el estado de asientos en tiempo real (Disponible/Ocupado). 
+
+RF-21 
+
+Selección de Asientos 
+
+Permitir al usuario seleccionar asientos disponibles. 
+
+RF-22 
+
+Bloqueo Temporal de asientos 
+
+Reservar asientos temporalmente durante el proceso de pago. 
+
+RF-23 
+
+Liberación de Asientos 
+
+Liberar asientos si el pago no se completa en un tiempo determinado. 
+
+RF-24 
+
+Confirmación de Compra 
+
+Marcar asientos como ocupados tras pago exitoso. 
+
+RF-25 
+
+Sincronización en Tiempo Real 
+
+Actualizar el estado de asientos en la plataforma. 
+
+ 
+
+I.III.II Requerimientos No Funcionales (RNF) 
+
+AREA FUNCIONAL 
+
+ID 
+
+REQUERIMIENTO ESPECIFICO 
+
+DESCRIPCION 
+
+USABILIDAD 
+
+RNF-01 
+
+Interfaz Adaptable (Responsive) 
+
+El sistema web debe renderizarse correctamente y mantener el 100% de operatividad en resoluciones móviles (desde 360px), tablets y pantallas de escritorio o terminales táctiles de taquilla. 
+
+RNF-02 
+
+Experiencia de Selección Visual 
+
+El mapa interactivo de butacas debe cargar su estado de disponibilidad en un lapso aceptable, garantizando una renderización fluida en el cliente web. 
+
+SEGURIDAD 
+
+RNF-03 
+
+Autenticación y Roles de Acceso 
+
+Uso del estándar OAuth 2.0 y tokens JWT (JSON Web Tokens) para una validación sin estado (stateless) entre los microservicios, asegurando los accesos para Administrador, Cliente y Taquillero. 
+
+RNF-04 
+
+Integridad y Cifrado de contraseñas 
+
+Todo el tráfico de red externo debe estar blindado bajo el protocolo TLS 1.2 o superior (reemplazo moderno de SSL). Se ejecutarán backups incrementales diarios de las bases de datos. 
+
+RENDIMIENTO 
+
+RNF-05 
+
+Alta Concurrencia y Escalabilidad 
+
+Durante estrenos, el API Gateway debe soportar un pico de almenos 1000 peticiones concurrentes sin degradar el tiempo de respuesta promedio por encima de los 500 milisegundos, garantizando la estabilidad del sistema. 
+
+INFRAESTRUCTURA 
+
+RNF-06 
+
+Arquitectura de Contenedores 
+
+Todos los servicios backend y frontend se aislarán en imágenes Docker ligeras, facilitando la orquestación local con Docker Compose. 
+
+DISPONIBILIDAD 
+
+RNF-07 
+
+Tolerancia a Fallos parciales 
+
+Si un servicio no crítico falla, el core transaccional de venta de boletos en Spring debe seguir operando con normalidad. 
+
+ 
+
+ 
+
+ 
+
+   I.IV CASOS DE USO DEL SISTEMA 
+
+ID 
+
+Caso de Uso 
+
+Actores 
+
+Descripción 
+
+CU01 
+
+Registrar nueva película 
+
+Administrador 
+
+Permite registrar una nueva película con sus datos básicos como título, sinopsis, duración y clasificación. 
+
+CU02 
+
+Actualizar metadatos y multimedia 
+
+Administrador 
+
+Permite editar la información de la película y actualizar imágenes, trailers u otros recursos. 
+
+CU03 
+
+Eliminar película 
+
+Administrador 
+
+Permite eliminar películas que ya no estarán disponibles en cartelera. 
+
+CU04 
+
+Gestionar clasificaciones 
+
+Administrador 
+
+Permite asignar o modificar la clasificación de las películas (edad, género, etc.). 
+
+CU05 
+
+Asignar sala y horario 
+
+Administrador 
+
+Permite programar funciones vinculando película, sala y horario. 
+
+CU06 
+
+Definir formato de proyección 
+
+Administrador 
+
+Permite configurar el tipo de proyección (2D, 3D, IMAX) para cada función. 
+
+CU07 
+
+Ver cartelera actualizada 
+
+Cliente / Usuario 
+
+Permite visualizar la lista de películas disponibles en tiempo real. 
+
+CU08 
+
+Consultar detalles de película 
+
+Cliente / Usuario 
+
+Permite ver información detallada de una película (sinopsis, duración, horarios). 
+
+CU09 
+
+Buscar y filtrar películas 
+
+Cliente / Usuario 
+
+Permite buscar películas por género, duración o clasificación. 
+
+CU10 
+
+Consultar funciones disponibles 
+
+Cliente / Usuario 
+
+Permite visualizar funciones por fecha, sala y película. 
+
+CU11 
+
+Seleccionar horario y sala 
+
+Cliente / Usuario 
+
+Permite elegir una función específica según horario y sala disponible. 
+
+CU12 
+
+Visualizar mapa de asientos 
+
+Cliente / Usuario / Taquillero 
+
+Muestra el estado de los asientos en tiempo real (disponible u ocupado). 
+
+CU13 
+
+Seleccionar asientos 
+
+Cliente / Usuario 
+
+Permite seleccionar asientos disponibles para la compra. 
+
+CU14 
+
+Realizar pago 
+
+Cliente / Usuario 
+
+Permite procesar el pago mediante integración con pasarela de pago. 
+
+CU15 
+
+Iniciar sesión 
+
+Cliente / Administrador / Taquillero 
+
+Permite autenticarse en el sistema mediante credenciales válidas. 
+
+CU16 
+
+Registrar usuario 
+
+Cliente 
+
+Permite crear una nueva cuenta en el sistema. 
+
+CU17 
+
+Cerrar sesión 
+
+Cliente / Administrador / Taquillero 
+
+Permite finalizar la sesión del usuario en el sistema. 
+
+CU18 
+
+Venta presencial de entradas 
+
+Taquillero 
+
+Permite registrar la venta de entradas directamente en el punto físico. 
+
+CU19 
+
+Imprimir comprobante 
+
+Taquillero 
+
+Permite generar e imprimir el ticket de compra para el cliente. 
+
+CU20 
+
+Bloquear asientos por incidencia 
+
+Taquillero 
+
+Permite bloquear asientos por mantenimiento o fallas técnicas. 
+
+ 
+
+ 
+ I.VI INTERACCIÓN ENTRE SERVICIOS 
+
+Escenario Operativo 
+
+Servicio Iniciador 
+
+Acción Técnica 
+
+Servicio Destino 
+
+Consulta de Cartelera 
+
+Cliente -- Movie Service 
+
+Solicita la lista de películas activas y sus metadatos para mostrar la cartelera. 
+
+Movie Service 
+
+Consulta de Funciones 
+
+Movie Service 
+
+Solicita los horarios disponibles de cada película seleccionada. 
+
+Showtime Service 
+
+Programación de Función 
+
+Administrador -- Showtime Service 
+
+Vincula película, sala, horario y tipo de proyección validando disponibilidad. 
+
+Movie Service 
+
+Validación de Horarios 
+
+Showtime Service 
+
+Verifica que no existan traslapes en la programación de salas. 
+
+(Interno) 
+
+Visualización de Asientos 
+
+Cliente -- Showtime Service 
+
+Solicita la estructura de la sala y función seleccionada. 
+
+Seat Service 
+
+Selección de Asientos 
+
+Cliente -- Seat Service 
+
+Consulta y muestra el estado actual de los asientos en tiempo real. 
+
+Seat Service 
+
+Bloqueo de Asientos 
+
+Seat Service 
+
+Bloquea temporalmente los asientos seleccionados durante el proceso de compra. 
+
+(Interno - Redis) 
+
+Confirmación de Compra 
+
+Seat Service 
+
+Cambia el estado de los asientos de “Bloqueado” a “Vendido” tras pago exitoso. 
+
+Seat Service 
+
+Proceso de Pago 
+
+Cliente -- Authentication Service 
+
+Valida identidad del usuario antes de procesar la compra. 
+
+Authentication Service 
+
+Integración de Pago 
+
+Sistema 
+
+Envía solicitud de pago y recibe confirmación de la pasarela de pago. 
+
+Pasarela de Pagote 
+
+Registro de Venta 
+
+Seat Service 
+
+Notifica la venta confirmada para fines de control y análisis. 
+
+(Opcional: Reportes) 
+
+Inicio de Sesión 
+
+Cliente -- Authentication Service 
+
+Envía credenciales y recibe token JWT para acceso al sistema. 
+
+Authentication Service 
+
+ 
+
+ 
+
+ 
+
+ 
