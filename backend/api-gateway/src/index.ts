@@ -101,8 +101,10 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // --- Inicio del Servidor ---
-app.listen(env.PORT, () => {
-  console.log(`[API Gateway] Corriendo en el puerto ${env.PORT} - Protegido con RateLimit, Proxy y JWT Zero Trust`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(env.PORT, () => {
+    console.log(`[API Gateway] Corriendo en el puerto ${env.PORT} - Protegido con RateLimit, Proxy y JWT Zero Trust`);
+  });
+}
 
 export default app;
