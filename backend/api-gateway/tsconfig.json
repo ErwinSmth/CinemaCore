@@ -1,5 +1,10 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "compilerOptions": {
     // File Layout
     "rootDir": "./src",
@@ -7,8 +12,8 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "Node16",
-    "moduleResolution": "node16",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "types": ["node"],
     "typeRoots": ["./src/types", "./node_modules/@types"],

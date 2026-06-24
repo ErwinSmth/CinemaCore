@@ -1,5 +1,7 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
+import path from 'path';
+import * as OpenApiValidator from 'express-openapi-validator';
 import rateLimit from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { env } from './config/env';
@@ -19,6 +21,16 @@ app.use(cors({
 
 // 2. Limite de Payload: Previene ataques de agotamiento de memoria (Max 100kb)
 app.use(express.json({ limit: '100kb' }));
+
+// 2.5 Validación Dinámica OpenAPI (SDD)
+app.use(
+  OpenApiValidator.middleware({
+    apiSpec: path.resolve(process.cwd(), '../../docs/api-spec.yml'),
+    validateRequests: true,
+    validateResponses: false,
+    ignorePaths: /.*\/health$/
+  })
+);
 
 // 3. Rate Limiting: Proteccion contra ataques de fuerza bruta
 const authLimiter = rateLimit({
@@ -76,6 +88,17 @@ app.use('/api/v1/showtimes', authMiddleware, createProxyMiddleware({
   changeOrigin: true,
   pathFilter: (path, req) => req.method !== 'GET'
 }));
+
+// --- Global Error Handler (OpenAPI Validator & Otros) ---
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  res.status(err.status || 500).json({
+    timestamp: new Date().toISOString(),
+    status: err.status || 500,
+    error: err.name || 'Internal Server Error',
+    message: err.message,
+    path: req.path
+  });
+});
 
 // --- Inicio del Servidor ---
 app.listen(env.PORT, () => {
