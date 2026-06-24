@@ -14,3 +14,15 @@ Este directorio centraliza la información técnica del sistema, utilizando Mark
 - **[07. Pruebas y Calidad](07_Testing/)**: Estrategia de pruebas unitarias, integración (Testcontainers) y E2E (Bruno).
 
 > **Nota para la presentación final:** El código Mermaid y el texto de estas secciones se pueden copiar y pegar fácilmente en draw.io y MS Word (.docx) respectivamente para la generación del PDF académico.
+
+---
+
+## Estado Actual del Proyecto (Progreso)
+
+| Componente | Estado de Implementación | Pruebas Automatizadas | Base de Datos / Infraestructura |
+| :--- | :---: | :---: | :---: |
+| **API Gateway** | 🟢 Completado | 🟢 Supertest (E2E y Validación OpenAPI) | N/A (Stateless) |
+| **Auth Service** | 🟢 Completado | 🟢 MockMvc + Testcontainers | 🟢 PostgreSQL + Flyway |
+| **Movie Service** | ⚪ Pendiente | ⚪ Pendiente | ⚪ Pendiente |
+| **Showtime Service**| ⚪ Pendiente | ⚪ Pendiente | ⚪ Pendiente |
+| **Seat Service** | ⚪ Pendiente | ⚪ Pendiente | ⚪ Pendiente |
