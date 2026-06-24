@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_Microservicios/03.2_Auth_Service.md",
+                "file": "03_Microservicios/03.1_API_Gateway.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "03.2_Auth_Service"
+              "title": "03.1_API_Gateway"
             }
           }
         ]
@@ -185,6 +185,7 @@
   },
   "active": "5d1d2954a7edbb56",
   "lastOpenFiles": [
+    "03_Microservicios/03.2_Auth_Service.md",
     "03_Microservicios/03.1_API_Gateway.md",
     "03_Microservicios/03.5_Seat_Service.md",
     "03_Microservicios/03.3_Movie_Service.md",

@@ -19,7 +19,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // manejo de errores centralizado (usando el custom HttpError)
     const status = error instanceof HttpError ? error.statusCode : 500;
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    res.status(status).json({ error: message });
+    
+    res.status(status).json({
+      timestamp: new Date().toISOString(),
+      status,
+      error: status === 500 ? 'Internal Server Error' : 'Bad Request',
+      message,
+      path: req.originalUrl || req.url
+    });
   }
 };
 
@@ -40,6 +47,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // manejo de errores centralizado
     const status = error instanceof HttpError ? error.statusCode : 500;
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    res.status(status).json({ error: message });
+    
+    res.status(status).json({
+      timestamp: new Date().toISOString(),
+      status,
+      error: status === 500 ? 'Internal Server Error' : 'Bad Request',
+      message,
+      path: req.originalUrl || req.url
+    });
   }
 };

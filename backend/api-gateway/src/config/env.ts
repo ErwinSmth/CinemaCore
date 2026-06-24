@@ -19,8 +19,11 @@ export const env = {
   PORT: parseInt(getEnvVar('PORT', '3000'), 10),
 
   // URLs de los microservicios, para el gateway sepa a donde redirigir
-  AUTH_SERVICE_URL: getEnvVar('AUTH_SERVICE_URL'),
+  AUTH_SERVICE_URL: getEnvVar('AUTH_SERVICE_URL', 'http://localhost:8081'),
+  MOVIE_SERVICE_URL: getEnvVar('MOVIE_SERVICE_URL', 'http://localhost:8082'),
+  SEAT_SERVICE_URL: getEnvVar('SEAT_SERVICE_URL', 'http://localhost:8083'),
+  SHOWTIME_SERVICE_URL: getEnvVar('SHOWTIME_SERVICE_URL', 'http://localhost:8084'),
 
   // Llave secreta para firmar el JWT
-  JWT_SECRET: getEnvVar('JWT_SECRET'),
+  JWT_SECRET: getEnvVar('JWT_SECRET', 'secreto_desarrollo_cambiar_en_produccion'),
 } as const;

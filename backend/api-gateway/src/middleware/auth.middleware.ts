@@ -9,9 +9,19 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
   // se extrae el encabezado de autorizacion
   const authHeader = req.headers['authorization'];
 
+  const sendError = (status: number, error: string, message: string) => {
+    res.status(status).json({
+      timestamp: new Date().toISOString(),
+      status,
+      error,
+      message,
+      path: req.originalUrl || req.url
+    });
+  };
+
   // validamos que el header exista y tenga el formato correcto
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'No Autorizado: No se ha proporcionado ningun token' });
+    sendError(401, 'Unauthorized', 'No Autorizado: No se ha proporcionado ningun token');
     return;
   }
 
@@ -19,22 +29,26 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
   const token = authHeader.split(' ')[1];
 
   if (!token) {
-    res.status(401).json({ error: 'No Autorizado: Cabecera de autorizacion mal formada' });
+    sendError(401, 'Unauthorized', 'No Autorizado: Cabecera de autorizacion mal formada');
     return;
   }
 
   try {
     // verificamos el token con la llave secreta compartida
     // as le dice a TypeScript que estructura esperamos dentro del token
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string; role: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { sub: string; roles: string[] };
     
-    // inyectamos los datos del usuario en la peticion para que el controlador los use
+    // inyectamos los datos del usuario en la peticion para que el controlador los use (legacy)
     req.user = decoded;
 
-    // pasamos al siguiente middleware o controlador
+    // Zero Trust Identity Propagation: Inyectamos en las cabeceras HTTP salientes
+    req.headers['x-user-id'] = decoded.sub; // el email o ID viaja en el subject (sub)
+    req.headers['x-user-roles'] = decoded.roles ? decoded.roles.join(',') : '';
+
+    // pasamos al siguiente middleware o controlador (Proxy)
     next();
   } catch {
     // si la firma no coincido o el token expiro, bloqueamos la peticion
-    res.status(403).json({ error: 'Forbidden: Token invalido o expirado' });
+    sendError(401, 'Unauthorized', 'Token invalido o expirado');
   }
 };
