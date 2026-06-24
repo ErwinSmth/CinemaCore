@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "03_Microservicios/03.5_Seat_Service.md",
+                "file": "03_Microservicios/03.1_API_Gateway.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de 03.5_Seat_Service"
+              "title": "Enlaces entrantes de 03.1_API_Gateway"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "03_Microservicios/03.5_Seat_Service.md",
+                "file": "03_Microservicios/03.1_API_Gateway.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Enlaces salientes de 03.5_Seat_Service"
+              "title": "Enlaces salientes de 03.1_API_Gateway"
             }
           },
           {
@@ -156,21 +156,21 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "03_Microservicios/03.5_Seat_Service.md",
+                "file": "03_Microservicios/03.1_API_Gateway.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Esquema de 03.5_Seat_Service"
+              "title": "Esquema de 03.1_API_Gateway"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -183,8 +183,9 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "5d1d2954a7edbb56",
+  "active": "ce5191999962ab65",
   "lastOpenFiles": [
+    "04_Base_De_Datos/05_Database_Seeding.md",
     "03_Microservicios/03.2_Auth_Service.md",
     "03_Microservicios/03.1_API_Gateway.md",
     "03_Microservicios/03.5_Seat_Service.md",
