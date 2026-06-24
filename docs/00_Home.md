@@ -11,5 +11,6 @@ Este directorio centraliza la información técnica del sistema, utilizando Mark
 - **[04. Base de Datos](04_Base_De_Datos/)**: Estrategia de persistencia, scripts Flyway y diagramas Entidad-Relación (ER).
 - **[05. Seguridad](05_Seguridad/)**: Flujo JWT, RBAC y protección de endpoints.
 - **[06. Infraestructura](06_Infraestructura/)**: Configuración de Docker Compose y despliegue multi-stage.
+- **[07. Pruebas y Calidad](07_Testing/)**: Estrategia de pruebas unitarias, integración (Testcontainers) y E2E (Bruno).
 
 > **Nota para la presentación final:** El código Mermaid y el texto de estas secciones se pueden copiar y pegar fácilmente en draw.io y MS Word (.docx) respectivamente para la generación del PDF académico.
