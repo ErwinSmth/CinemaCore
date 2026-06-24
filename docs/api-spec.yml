@@ -30,21 +30,34 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password, firstName, lastName]
+              required: [email, contrasena, nombres, apellidos]
               properties:
                 email:
                   type: string
-                password:
+                contrasena:
                   type: string
-                firstName:
+                nombres:
                   type: string
-                lastName:
+                apellidos:
                   type: string
       responses:
         '201':
-          description: Usuario registrado exitosamente
-        '409':
-          description: Correo electrónico ya existe
+          description: Usuario registrado exitosamente y auto-logueado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Errores de validación o correo duplicado (BadRequestException)
 
   /auth/login:
     post:
@@ -56,11 +69,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password]
+              required: [email, contrasena]
               properties:
                 email:
                   type: string
-                password:
+                contrasena:
                   type: string
       responses:
         '200':
@@ -72,10 +85,12 @@ paths:
                 properties:
                   token:
                     type: string
-                  type:
+                  email:
                     type: string
-                  expiresIn:
-                    type: integer
+                  roles:
+                    type: array
+                    items:
+                      type: string
         '401':
           description: Credenciales inválidas
 
