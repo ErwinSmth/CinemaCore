@@ -187,17 +187,19 @@
   },
   "active": "5d1d2954a7edbb56",
   "lastOpenFiles": [
+    "03_Microservicios/03.1_API_Gateway.md",
+    "03_Microservicios/03.3_Movie_Service.md",
+    "01_Requerimientos/README.md",
+    "02_Arquitectura/README.md",
+    "00_Home.md",
+    "04_Base_De_Datos/02_Movie_Database.md",
     "07_Testing/02_Auth_Service_Tests.md",
     "07_Testing/03_API_Gateway_Tests.md",
-    "03_Microservicios/03.1_API_Gateway.md",
     "07_Testing/01_Estrategia_Pruebas.md",
     "07_Testing",
     "04_Base_De_Datos/05_Database_Seeding.md",
     "03_Microservicios/03.2_Auth_Service.md",
     "03_Microservicios/03.5_Seat_Service.md",
-    "03_Microservicios/03.3_Movie_Service.md",
-    "02_Arquitectura/README.md",
-    "03_Microservicios/README.md",
-    "01_Requerimientos/README.md"
+    "03_Microservicios/README.md"
   ]
 }

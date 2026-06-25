@@ -95,11 +95,11 @@ paths:
           description: Credenciales inválidas
 
   # ==========================================
-  # MOVIE SERVICE
+  # MOVIE SERVICE (Curación de Catálogo)
   # ==========================================
-  /movies/search:
+  /movies/tmdb/search:
     get:
-      summary: Busca películas en TMDB
+      summary: (Admin) Buscar en TMDB
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -111,11 +111,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Lista de resultados de TMDB
+          description: Lista de resultados básicos de TMDB
           
-  /movies/tmdb/{tmdbId}:
-    get:
-      summary: Obtiene detalles completos de TMDB para curación
+  /movies/tmdb/import/{tmdbId}:
+    post:
+      summary: (Admin) Importar al Cine Local
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -126,27 +126,56 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
-          description: Detalle completo de la película
+        '201':
+          description: ID local generado (Película guardada)
+        '502':
+          description: TMDBIntegrationException (Error con la API externa)
 
-  /movies:
+  /movies/admin:
     get:
-      summary: Obtiene la cartelera activa
+      summary: (Admin) Consultar catálogo local completo
       tags: [Movies]
+      security:
+        - bearerAuth: []
       parameters:
         - name: status
           in: query
           schema:
             type: string
-            default: CARTELERA
+        - name: search
+          in: query
+          schema:
+            type: string
       responses:
         '200':
-          description: Películas activas en cartelera
-    post:
-      summary: Guarda una película curada en la BD local
+          description: Catálogo local sin filtros forzados
+
+  /movies/{id}:
+    get:
+      summary: (Público) Consultar detalles
+      tags: [Movies]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Documento detallado (JSONB extraído)
+        '404':
+          description: MovieNotFoundException
+    put:
+      summary: (Admin) Actualizar metadatos y clasificaciones
       tags: [Movies]
       security:
         - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -154,21 +183,52 @@ paths:
             schema:
               type: object
               properties:
-                tmdbId:
-                  type: integer
                 title:
                   type: string
-                runtime:
-                  type: integer
+                overview:
+                  type: string
                 ageRating:
                   type: string
                 status:
                   type: string
-                details:
-                  type: object
       responses:
-        '201':
-          description: Película guardada localmente
+        '200':
+          description: Película actualizada
+        '400':
+          description: ConstraintViolationException
+    delete:
+      summary: (Admin) Eliminar película (Soft Delete)
+      tags: [Movies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Eliminación lógica exitosa
+        '409':
+          description: IllegalMovieStateException (Ya tiene funciones)
+
+  /movies:
+    get:
+      summary: (Público) Ver cartelera
+      tags: [Movies]
+      parameters:
+        - name: genre
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Películas activas en cartelera (Fuerza status=CARTELERA)
 
   # ==========================================
   # SHOWTIME SERVICE
