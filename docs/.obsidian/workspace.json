@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "07_Testing/02_Auth_Service_Tests.md",
+                "file": "03_Microservicios/03.3_Movie_Service.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "02_Auth_Service_Tests"
+              "title": "03.3_Movie_Service"
             }
           }
         ]
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 205.5
+    "width": 205.5,
+    "collapsed": true
   },
   "right": {
     "id": "91556bec392ea2c6",
@@ -94,7 +95,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "07_Testing/02_Auth_Service_Tests.md",
+                "file": "03_Microservicios/03.3_Movie_Service.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +105,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Enlaces entrantes de 02_Auth_Service_Tests"
+              "title": "Enlaces entrantes de 03.3_Movie_Service"
             }
           },
           {
@@ -113,12 +114,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "07_Testing/02_Auth_Service_Tests.md",
+                "file": "03_Microservicios/03.3_Movie_Service.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Enlaces salientes de 02_Auth_Service_Tests"
+              "title": "Enlaces salientes de 03.3_Movie_Service"
             }
           },
           {
@@ -156,13 +157,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "07_Testing/02_Auth_Service_Tests.md",
+                "file": "03_Microservicios/03.3_Movie_Service.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Esquema de 02_Auth_Service_Tests"
+              "title": "Esquema de 03.3_Movie_Service"
             }
           }
         ],
@@ -170,7 +171,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -185,9 +187,9 @@
   },
   "active": "5d1d2954a7edbb56",
   "lastOpenFiles": [
+    "07_Testing/02_Auth_Service_Tests.md",
     "07_Testing/03_API_Gateway_Tests.md",
     "03_Microservicios/03.1_API_Gateway.md",
-    "07_Testing/02_Auth_Service_Tests.md",
     "07_Testing/01_Estrategia_Pruebas.md",
     "07_Testing",
     "04_Base_De_Datos/05_Database_Seeding.md",

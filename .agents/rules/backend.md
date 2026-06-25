@@ -31,7 +31,7 @@ Precaución con Dependencias: Si vas a proponer agregar una nueva dependencia, p
 
 ## Comunicación Inter-Servicio
 
-- 100% REST vía HTTP/HTTPS
+- 100% REST vía HTTP/HTTPS por defecto. Eventos asíncronos (RabbitMQ/Kafka) EXCLUSIVAMENTE para el flujo de pagos (Culqi) y notificaciones (Patrón SAGA).
 - API Gateway como único punto de entrada (Frontend solo habla con Gateway)
 - JWT se valida en el API Gateway antes de reenviar a microservicios
 - Cada microservicio tiene su propia base de datos (no compartidas)

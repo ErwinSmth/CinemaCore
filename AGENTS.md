@@ -17,7 +17,7 @@ Monorepo poliglota de microservicios para sistema de cine (Cinestar).
 1. **UN microservicio a la vez** - No leer/modificar archivos de otros servicios en la misma sesión
 2. **No asumir dependencias** - Verificar pom.xml/package.json antes de usar librerías nuevas
 3. **Migraciones Flyway** - Code-First, nombre: `V{version}__{description}.sql`
-4. **100% REST** - Comunicación inter-servicio vía HTTP/HTTPS, sin mensajería asíncrona
+4. **100% REST + Eventos SAGA** - Comunicación inter-servicio vía HTTP/HTTPS por defecto. Uso EXCLUSIVO de mensajería asíncrona (RabbitMQ/Kafka) para el flujo de pago con Culqi y notificaciones.
 5. **API Gateway como único punto de entrada** - Frontend solo habla con el Gateway
 
 ## Communication Pattern

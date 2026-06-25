@@ -132,38 +132,44 @@ sequenceDiagram
     participant Cliente
     participant Gateway as API Gateway
     participant Auth as Auth Service
-    participant Showtime as Showtime Service
     participant Seat as Seat Service
-    participant Pago as Pasarela Externa
+    participant Culqi as Culqi (Modo Pruebas)
+    participant Rabbit as RabbitMQ / Kafka
+    participant Notif as Notification Service
 
     Cliente->>Gateway: Solicita comprar entradas (JWT)
     Gateway->>Auth: Valida JWT
     Auth-->>Gateway: Token válido (Roles correctos)
     
-    Gateway->>Showtime: Valida disponibilidad de Función
-    Showtime-->>Gateway: Función confirmada
+    Gateway->>Seat: Solicita Bloqueo Optimista (@Version)
+    Seat-->>Gateway: Asientos bloqueados (PostgreSQL)
     
-    Gateway->>Seat: Solicita Bloqueo Temporal de Asientos
-    Seat-->>Gateway: Asientos bloqueados (Redis)
+    Cliente->>Culqi: Ingresa tarjeta en Popup
+    Culqi-->>Cliente: Retorna Token de Pago
     
-    Gateway->>Pago: Inicia transacción
-    Pago-->>Gateway: Transacción Exitosa
+    Cliente->>Gateway: Envía Token de Pago
+    Gateway->>Culqi: Cobra el Token síncronamente
+    Culqi-->>Gateway: Cargo Exitoso
     
-    Gateway->>Seat: Confirma Compra (Ocupados)
-    Seat-->>Gateway: Estado actualizado a Vendido
+    Gateway->>Rabbit: Publica Evento "PagoCulqiExitoso"
+    Gateway-->>Cliente: 202 Accepted (Procesando boleto)
     
-    Gateway-->>Cliente: Compra Exitosa (Ticket generado)
+    Rabbit-)Seat: Consume Evento "PagoCulqiExitoso"
+    Seat->>Seat: Confirma Compra (Vendido)
+    
+    Rabbit-)Notif: Consume Evento "PagoCulqiExitoso"
+    Notif->>Notif: Genera PDF y envía Email
 ```
 
 | Escenario Operativo | Servicio Iniciador | Acción Técnica | Servicio Destino |
 |---|---|---|---|
-| **Consulta Cartelera** | Cliente -> Movie | Solicita películas y metadatos. | Movie Service |
-| **Consulta Funciones** | Movie Service | Solicita horarios para películas. | Showtime Service |
+| **Consulta Cartelera** | Cliente -> Movie | Solicita películas y metadatos (Caché Redis). | Movie Service |
+| **Consulta Funciones** | Movie Service | Solicita horarios para películas (Caché Redis). | Showtime Service |
 | **Programación Función**| Admin -> Showtime | Vincula película, sala y horario. | Movie Service |
 | **Validación Horarios** | Showtime Service | Verifica no traslapes internamente. | (Interno) |
 | **Mapa Asientos** | Cliente -> Showtime | Solicita estructura de sala. | Seat Service |
-| **Bloqueo Asientos** | Seat Service | Bloqueo temporal durante compra. | (Interno Redis) |
-| **Confirmación Compra** | Seat Service | Cambia estado de Bloqueado a Vendido. | Seat Service |
-| **Proceso Pago** | Cliente -> Auth | Valida identidad. | Auth Service |
-| **Integración Pago** | Sistema | Envía a pasarela y recibe respuesta. | Pasarela Pagos |
+| **Bloqueo Asientos** | Seat Service | Bloqueo Optimista en Postgres (`@Version`). | (Interno BD) |
+| **Confirmación Compra** | Seat Service | Evento Asíncrono: Cambia a Vendido. | Seat Service |
+| **Proceso Pago** | Cliente -> Gateway | Cargo de token mediante **Culqi**. | Pasarela Culqi |
+| **Notificaciones** | Evento Asíncrono | Genera PDF y envía correo. | Notification Service |
 | **Inicio Sesión** | Cliente -> Auth | Emite JWT tras credenciales correctas. | Auth Service |
