@@ -19,5 +19,14 @@ services:
       # Ruta del archivo init.sql donde se crea las BD
       - ./init-db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  # Redis para Caché (Cache-Aside & Warming)
+  redis:
+    image: redis:7-alpine
+    container_name: cinestar-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+
 volumes:
   postgres_data:
