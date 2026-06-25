@@ -100,6 +100,7 @@ paths:
   /movies/tmdb/search:
     get:
       summary: (Admin) Buscar en TMDB
+      operationId: searchTmdbMovies
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -116,6 +117,7 @@ paths:
   /movies/tmdb/import/{tmdbId}:
     post:
       summary: (Admin) Importar al Cine Local
+      operationId: importMovie
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -134,6 +136,7 @@ paths:
   /movies/admin:
     get:
       summary: (Admin) Consultar catálogo local completo
+      operationId: getAllMoviesAdmin
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -153,6 +156,7 @@ paths:
   /movies/{id}:
     get:
       summary: (Público) Consultar detalles
+      operationId: getMovieById
       tags: [Movies]
       parameters:
         - name: id
@@ -167,6 +171,7 @@ paths:
           description: MovieNotFoundException
     put:
       summary: (Admin) Actualizar metadatos y clasificaciones
+      operationId: updateMovie
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -198,6 +203,7 @@ paths:
           description: ConstraintViolationException
     delete:
       summary: (Admin) Eliminar película (Soft Delete)
+      operationId: deleteMovie
       tags: [Movies]
       security:
         - bearerAuth: []
@@ -216,6 +222,7 @@ paths:
   /movies:
     get:
       summary: (Público) Ver cartelera
+      operationId: getCartelera
       tags: [Movies]
       parameters:
         - name: genre
