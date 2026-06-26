@@ -1,6 +1,5 @@
 package pe.edu.utp.cinestar.movie_service.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,13 +16,11 @@ import pe.edu.utp.cinestar.movie_service.model.Movie;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
 import pe.edu.utp.cinestar.movie_service.model.RestriccionEdad;
+import pe.edu.utp.cinestar.movie_service.repository.MovieRepository;
+import pe.edu.utp.cinestar.movie_service.repository.RestriccionEdadRepository;
 import pe.edu.utp.cinestar.movie_service.repository.tmdb.TmdbRestClient;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -35,6 +32,12 @@ public class MovieService {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    MovieRepository movieRepository;
+
+    @Inject
+    RestriccionEdadRepository restriccionEdadRepository;
 
     public JsonNode searchTmdbMovies(String query) {
         try {
@@ -60,12 +63,12 @@ public class MovieService {
             throw new MovieNotFoundException("La película no existe en TMDB");
         }
 
-        Movie movie = Movie.findByTmdbId(tmdbId);
+        Movie movie = movieRepository.findByTmdbId(tmdbId);
         if (movie == null) {
             movie = new Movie();
             movie.tmdbId = tmdbId;
             movie.estado = "INACTIVO"; // Estado inicial por defecto
-            movie.restriccionEdad = RestriccionEdad.findByCodigo("APT"); // Restricción inicial por defecto
+            movie.restriccionEdad = restriccionEdadRepository.findByCodigo("APT"); // Restricción inicial por defecto
         }
 
         // Upsert Híbrido: Siempre actualizamos los metadatos visuales
@@ -132,29 +135,16 @@ public class MovieService {
         // Asignamos el JSONB construido a la entidad
         movie.metadata = metadataNode;
 
-        movie.persist();
+        movieRepository.persist(movie);
         return movie.id;
     }
 
     public List<Movie> getAllMoviesAdmin(String status, String search) {
-        StringBuilder hql = new StringBuilder("1=1");
-        Map<String, Object> params = new HashMap<>();
-        
-        if (status != null && !status.trim().isEmpty()) {
-            hql.append(" and estado = :status");
-            params.put("status", status.trim());
-        }
-        
-        if (search != null && !search.trim().isEmpty()) {
-            hql.append(" and titulo ilike :search");
-            params.put("search", "%" + search.trim() + "%");
-        }
-        
-        return Movie.find(hql.toString(), params).list();
+        return movieRepository.findByStatusAndSearch(status, search);
     }
 
     public Movie getMovieById(Long id) {
-        Movie movie = Movie.findById(id);
+        Movie movie = movieRepository.findById(id);
         if (movie == null) {
             throw new MovieNotFoundException("Película no encontrada en la BD local con ID: " + id);
         }
@@ -170,7 +160,7 @@ public class MovieService {
         if (req.getOverview() != null)
             movie.sinopsis = req.getOverview();
         if (req.getAgeRating() != null) {
-            RestriccionEdad res = RestriccionEdad.findByCodigo(req.getAgeRating());
+            RestriccionEdad res = restriccionEdadRepository.findByCodigo(req.getAgeRating());
             if (res != null)
                 movie.restriccionEdad = res;
         }
@@ -190,29 +180,7 @@ public class MovieService {
 
     @CacheResult(cacheName = "cartelera")
     public List<MovieCarteleraResponse> getCartelera(String genre, String search) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM peliculas WHERE estado = 'CARTELERA'");
-        Map<String, Object> params = new HashMap<>();
-        
-        if (search != null && !search.trim().isEmpty()) {
-            // Uso de ILIKE para aprovechar el índice pg_trgm de PostgreSQL de manera segura
-            sql.append(" AND titulo ILIKE :search");
-            params.put("search", "%" + search.trim() + "%");
-        }
-        
-        if (genre != null && !genre.trim().isEmpty()) {
-            // Consulta GIN nativa usando el operador de contención JSONB @>
-            sql.append(" AND metadata @> CAST(:genreJson AS jsonb)");
-            params.put("genreJson", "{\"generos\": [\"" + genre.trim() + "\"]}");
-        }
-        
-        // Ejecutamos la consulta nativa de forma segura y parametrizada contra SQL Injection
-        jakarta.persistence.Query nativeQuery = Movie.getEntityManager().createNativeQuery(sql.toString(), Movie.class);
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            nativeQuery.setParameter(entry.getKey(), entry.getValue());
-        }
-        
-        @SuppressWarnings("unchecked")
-        List<Movie> cartelera = nativeQuery.getResultList();
+        List<Movie> cartelera = movieRepository.findCartelera(genre, search);
         
         return cartelera.stream().map(m -> {
             MovieCarteleraResponse dto = new MovieCarteleraResponse();

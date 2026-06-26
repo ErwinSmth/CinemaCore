@@ -1,6 +1,6 @@
 package pe.edu.utp.cinestar.movie_service.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "peliculas")
-public class Movie extends PanacheEntityBase {
+public class Movie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,8 +52,4 @@ public class Movie extends PanacheEntityBase {
     @Column(name = "updated_at")
     public LocalDateTime updatedAt;
 
-    // Métodos útiles de Panache (Active Record)
-    public static Movie findByTmdbId(Integer tmdbId) {
-        return find("tmdbId", tmdbId).firstResult();
-    }
 }

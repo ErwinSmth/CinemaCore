@@ -1,11 +1,10 @@
 package pe.edu.utp.cinestar.movie_service.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "restriccion_edad")
-public class RestriccionEdad extends PanacheEntityBase {
+public class RestriccionEdad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,8 +16,5 @@ public class RestriccionEdad extends PanacheEntityBase {
 
     @Column(name = "descripcion", nullable = false, length = 100)
     public String descripcion;
-    
-    public static RestriccionEdad findByCodigo(String codigo) {
-        return find("codigo", codigo).firstResult();
-    }
+
 }
