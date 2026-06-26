@@ -23,7 +23,7 @@ INSERT INTO restriccion_edad (codigo, descripcion) VALUES
 
 -- 3. Tabla Principal: Películas
 CREATE TABLE peliculas (
-    peliculas_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    peliculas_id BIGSERIAL PRIMARY KEY,
     tmdb_id INTEGER UNIQUE NOT NULL,
     titulo VARCHAR(255) NOT NULL,
     sinopsis TEXT,

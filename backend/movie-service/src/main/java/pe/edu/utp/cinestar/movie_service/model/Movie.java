@@ -16,7 +16,7 @@ public class Movie extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+    public Long id;
 
     @Column(name = "tmdb_id", unique = true, nullable = false)
     public Integer tmdbId;
@@ -27,27 +27,22 @@ public class Movie extends PanacheEntityBase {
     @Column(name = "sinopsis", columnDefinition = "TEXT")
     public String sinopsis;
 
-    @Column(name = "poster_path")
-    public String posterPath;
-
-    @Column(name = "backdrop_path")
-    public String backdropPath;
-
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "generos", nullable = false, columnDefinition = "jsonb")
-    public String generos = "[]";
+    @Column(name = "metadata", columnDefinition = "jsonb")
+    public com.fasterxml.jackson.databind.JsonNode metadata;
 
-    @Column(name = "duracion_minutos")
-    public Integer duracionMinutos;
+    @Column(name = "duracion_min")
+    public Integer duracionMin;
 
-    @Column(name = "restriccion_edad", nullable = false, length = 5)
-    public String restriccionEdad = "A";
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "restriccion_id", nullable = false)
+    public RestriccionEdad restriccionEdad;
 
     @Column(name = "estado", nullable = false, length = 20)
     public String estado = "INACTIVO";
 
-    @Column(name = "fecha_lanzamiento")
-    public LocalDate fechaLanzamiento;
+    @Column(name = "fecha_estreno")
+    public LocalDate fechaEstreno;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -6,6 +6,9 @@ import jakarta.ws.rs.core.Response;
 import pe.edu.utp.cinestar.movie_service.controller.api.MoviesApi;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
 import pe.edu.utp.cinestar.movie_service.service.MovieService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import java.net.URI;
 
 @ApplicationScoped
 public class MovieController implements MoviesApi {
@@ -14,43 +17,46 @@ public class MovieController implements MoviesApi {
     MovieService movieService;
 
     @Override
+    @RolesAllowed("ROLE_ADMINISTRADOR")
     public Response searchTmdbMovies(String query) {
         return Response.ok(movieService.searchTmdbMovies(query)).build();
     }
 
     @Override
+    @RolesAllowed("ROLE_ADMINISTRADOR")
     public Response importMovie(Integer tmdbId) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Import Movie\"}").build();
+        Long idLocal = movieService.importMovie(tmdbId);
+        return Response.created(URI.create("/movies/" + idLocal)).entity("{\"id\": " + idLocal + "}").build();
     }
 
     @Override
+    @RolesAllowed("ROLE_ADMINISTRADOR")
     public Response getAllMoviesAdmin(String status, String search) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Get All Admin\"}").build();
+        return Response.ok(movieService.getAllMoviesAdmin(status, search)).build();
     }
 
     @Override
-    public Response getMovieById(Integer id) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Get Movie\"}").build();
+    @PermitAll
+    public Response getMovieById(Long id) {
+        return Response.ok(movieService.getMovieById(id)).build();
     }
 
     @Override
-    public Response updateMovie(Integer id, UpdateMovieRequest updateMovieRequest) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Update Movie\"}").build();
+    @RolesAllowed("ROLE_ADMINISTRADOR")
+    public Response updateMovie(Long id, UpdateMovieRequest updateMovieRequest) {
+        return Response.ok(movieService.updateMovie(id, updateMovieRequest)).build();
     }
 
     @Override
-    public Response deleteMovie(Integer id) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Delete Movie\"}").build();
+    @RolesAllowed("ROLE_ADMINISTRADOR")
+    public Response deleteMovie(Long id) {
+        movieService.deleteMovie(id);
+        return Response.noContent().build();
     }
 
     @Override
+    @PermitAll
     public Response getCartelera(String genre, String search) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED)
-                .entity("{\"message\": \"Pending implementation: Get Cartelera\"}").build();
+        return Response.ok(movieService.getCartelera(genre, search)).build();
     }
 }

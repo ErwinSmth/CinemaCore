@@ -15,7 +15,21 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
+  schemas:
+    MovieCarteleraResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+        poster_path:
+          type: string
+        estado:
+          type: string
+        restriccion_edad:
+          type: string
 paths:
   # ==========================================
   # AUTHENTICATION SERVICE
@@ -117,6 +131,7 @@ paths:
   /movies/tmdb/import/{tmdbId}:
     post:
       summary: (Admin) Importar al Cine Local
+      description: Si la película ya existe (tmdbId), se actualizará su información externa manteniendo el estado y restricción locales intactos (Upsert Híbrido).
       operationId: importMovie
       tags: [Movies]
       security:
@@ -164,6 +179,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int64
       responses:
         '200':
           description: Documento detallado (JSONB extraído)
@@ -181,6 +197,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int64
       requestBody:
         required: true
         content:
@@ -213,6 +230,7 @@ paths:
           required: true
           schema:
             type: integer
+            format: int64
       responses:
         '204':
           description: Eliminación lógica exitosa
@@ -236,6 +254,12 @@ paths:
       responses:
         '200':
           description: Películas activas en cartelera (Fuerza status=CARTELERA)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovieCarteleraResponse'
 
   # ==========================================
   # SHOWTIME SERVICE
@@ -267,8 +291,8 @@ paths:
               type: object
               properties:
                 movie_id:
-                  type: string
-                  format: uuid
+                  type: integer
+                  format: int64
                 sala_id:
                   type: string
                   format: uuid
