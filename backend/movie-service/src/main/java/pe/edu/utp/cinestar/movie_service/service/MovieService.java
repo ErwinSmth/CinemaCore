@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.quarkus.cache.CacheInvalidateAll;
+import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import pe.edu.utp.cinestar.movie_service.exception.MovieNotFoundException;
+import pe.edu.utp.cinestar.movie_service.exception.TMDBIntegrationException;
 import pe.edu.utp.cinestar.movie_service.model.Movie;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
@@ -18,7 +21,9 @@ import pe.edu.utp.cinestar.movie_service.repository.tmdb.TmdbRestClient;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -32,14 +37,24 @@ public class MovieService {
     ObjectMapper objectMapper;
 
     public JsonNode searchTmdbMovies(String query) {
-        return tmdbRestClient.searchMovies(query, "es-MX").await().indefinitely();
+        try {
+            return tmdbRestClient.searchMovies(query, "es-MX").await().indefinitely();
+        } catch (Exception e) {
+            throw new TMDBIntegrationException("Error de comunicación o timeout con TMDB al buscar: " + query);
+        }
     }
 
     @Transactional
+    @CacheInvalidateAll(cacheName = "cartelera")
     public Long importMovie(Integer tmdbId) {
         // Obtenemos los datos frescos de TMDB (Incluyendo créditos y videos)
-        JsonNode tmdbData = tmdbRestClient.getMovieDetails(tmdbId, "credits,videos,images", "es-MX").await()
-                .indefinitely();
+        JsonNode tmdbData;
+        try {
+            tmdbData = tmdbRestClient.getMovieDetails(tmdbId, "credits,videos,images", "es-MX").await()
+                    .indefinitely();
+        } catch (Exception e) {
+            throw new TMDBIntegrationException("Fallo de comunicación con TMDB o servicio inalcanzable para el ID: " + tmdbId);
+        }
 
         if (tmdbData == null || !tmdbData.has("id")) {
             throw new MovieNotFoundException("La película no existe en TMDB");
@@ -122,12 +137,20 @@ public class MovieService {
     }
 
     public List<Movie> getAllMoviesAdmin(String status, String search) {
-        // En una implementación final usaríamos PanacheQuery para los filtros
-        var query = Movie.findAll();
-        if (status != null && !status.isEmpty()) {
-            query = Movie.find("estado", status);
+        StringBuilder hql = new StringBuilder("1=1");
+        Map<String, Object> params = new HashMap<>();
+        
+        if (status != null && !status.trim().isEmpty()) {
+            hql.append(" and estado = :status");
+            params.put("status", status.trim());
         }
-        return query.list();
+        
+        if (search != null && !search.trim().isEmpty()) {
+            hql.append(" and titulo ilike :search");
+            params.put("search", "%" + search.trim() + "%");
+        }
+        
+        return Movie.find(hql.toString(), params).list();
     }
 
     public Movie getMovieById(Long id) {
@@ -139,6 +162,7 @@ public class MovieService {
     }
 
     @Transactional
+    @CacheInvalidateAll(cacheName = "cartelera")
     public Movie updateMovie(Long id, UpdateMovieRequest req) {
         Movie movie = getMovieById(id);
         if (req.getTitle() != null)
@@ -157,16 +181,39 @@ public class MovieService {
     }
 
     @Transactional
+    @CacheInvalidateAll(cacheName = "cartelera")
     public void deleteMovie(Long id) {
         Movie movie = getMovieById(id);
         // Soft delete
         movie.estado = "ELIMINADA";
     }
 
+    @CacheResult(cacheName = "cartelera")
     public List<MovieCarteleraResponse> getCartelera(String genre, String search) {
-        // Sólo las activas en cartelera
-        List<Movie> cartelera = Movie.find("estado", "CARTELERA").list();
-
+        StringBuilder sql = new StringBuilder("SELECT * FROM peliculas WHERE estado = 'CARTELERA'");
+        Map<String, Object> params = new HashMap<>();
+        
+        if (search != null && !search.trim().isEmpty()) {
+            // Uso de ILIKE para aprovechar el índice pg_trgm de PostgreSQL de manera segura
+            sql.append(" AND titulo ILIKE :search");
+            params.put("search", "%" + search.trim() + "%");
+        }
+        
+        if (genre != null && !genre.trim().isEmpty()) {
+            // Consulta GIN nativa usando el operador de contención JSONB @>
+            sql.append(" AND metadata @> CAST(:genreJson AS jsonb)");
+            params.put("genreJson", "{\"generos\": [\"" + genre.trim() + "\"]}");
+        }
+        
+        // Ejecutamos la consulta nativa de forma segura y parametrizada contra SQL Injection
+        jakarta.persistence.Query nativeQuery = Movie.getEntityManager().createNativeQuery(sql.toString(), Movie.class);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            nativeQuery.setParameter(entry.getKey(), entry.getValue());
+        }
+        
+        @SuppressWarnings("unchecked")
+        List<Movie> cartelera = nativeQuery.getResultList();
+        
         return cartelera.stream().map(m -> {
             MovieCarteleraResponse dto = new MovieCarteleraResponse();
             dto.setId(m.id);

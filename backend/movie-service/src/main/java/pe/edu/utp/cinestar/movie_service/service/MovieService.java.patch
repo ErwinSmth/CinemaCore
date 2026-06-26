@@ -1,0 +1,69 @@
+--- backend/movie-service/src/main/java/pe/edu/utp/cinestar/movie_service/service/MovieService.java
++++ backend/movie-service/src/main/java/pe/edu/utp/cinestar/movie_service/service/MovieService.java
+@@ -19,6 +19,8 @@
+ import java.time.LocalDate;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Map;
++import java.util.HashMap;
+ import java.util.stream.Collectors;
+ 
+ @ApplicationScoped
+@@ -74,13 +76,17 @@
+     }
+ 
+     public List<Movie> getAllMoviesAdmin(String status, String search) {
+-        // En una implementación final usaríamos PanacheQuery para los filtros
+-        var query = Movie.findAll();
+-        if (status != null && !status.isEmpty()) {
+-            query = Movie.find("estado", status);
++        StringBuilder hql = new StringBuilder("1=1");
++        Map<String, Object> params = new HashMap<>();
++        if (status != null && !status.trim().isEmpty()) {
++            hql.append(" and estado = :status");
++            params.put("status", status.trim());
+         }
+-        return query.list();
++        if (search != null && !search.trim().isEmpty()) {
++            hql.append(" and titulo ilike :search");
++            params.put("search", "%" + search.trim() + "%");
++        }
++        return Movie.find(hql.toString(), params).list();
+     }
+ 
+     public Movie getMovieById(Long id) {
+@@ -111,10 +117,32 @@
+     }
+ 
+     public List<MovieCarteleraResponse> getCartelera(String genre, String search) {
+-        // Sólo las activas en cartelera
+-        List<Movie> cartelera = Movie.find("estado", "CARTELERA").list();
++        StringBuilder sql = new StringBuilder("SELECT * FROM peliculas WHERE estado = 'CARTELERA'");
++        Map<String, Object> params = new HashMap<>();
+         
+-        return cartelera.stream().map(m -> {
++        if (search != null && !search.trim().isEmpty()) {
++            // Uso de ILIKE para aprovechar el índice pg_trgm de PostgreSQL de manera segura
++            sql.append(" AND titulo ILIKE :search");
++            params.put("search", "%" + search.trim() + "%");
++        }
++        
++        if (genre != null && !genre.trim().isEmpty()) {
++            // Consulta GIN nativa usando el operador de contención JSONB @>
++            sql.append(" AND metadata @> CAST(:genreJson AS jsonb)");
++            params.put("genreJson", "{\"generos\": [\"" + genre.trim() + "\"]}");
++        }
++        
++        // Ejecutamos la consulta nativa de forma segura y parametrizada contra SQL Injection
++        jakarta.persistence.Query nativeQuery = Movie.getEntityManager().createNativeQuery(sql.toString(), Movie.class);
++        for (Map.Entry<String, Object> entry : params.entrySet()) {
++            nativeQuery.setParameter(entry.getKey(), entry.getValue());
++        }
++        
++        @SuppressWarnings("unchecked")
++        List<Movie> cartelera = nativeQuery.getResultList();
++        
++        return cartelera.stream().map(m -> {
+             MovieCarteleraResponse dto = new MovieCarteleraResponse();
+             dto.setId(m.id);
+             dto.setTitulo(m.titulo);

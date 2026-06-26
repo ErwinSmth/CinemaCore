@@ -8,6 +8,8 @@ import org.eclipse.microprofile.rest.client.annotation.ClientHeaderParam;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
  * Cliente REST Reactivo para The Movie Database (TMDB).
@@ -24,6 +26,8 @@ public interface TmdbRestClient {
      */
     @GET
     @Path("/search/movie")
+    @Timeout(2000)
+    @Retry(maxRetries = 2)
     Uni<JsonNode> searchMovies(@QueryParam("query") String query, 
                                @QueryParam("language") String language);
 
@@ -33,6 +37,8 @@ public interface TmdbRestClient {
      */
     @GET
     @Path("/movie/{movie_id}")
+    @Timeout(2000)
+    @Retry(maxRetries = 2)
     Uni<JsonNode> getMovieDetails(@PathParam("movie_id") int movieId, 
                                   @QueryParam("append_to_response") String appendToResponse,
                                   @QueryParam("language") String language);
