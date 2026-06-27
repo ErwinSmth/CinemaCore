@@ -2,7 +2,7 @@
 description: Esquema de Base de Datos para Movie Service
 related_skills:
   - postgresql
-  - quarkus
+  - spring boot
 ---
 
 # Data Model: Movie Service (`db_movies`)
@@ -33,4 +33,4 @@ Tabla principal del catálogo de cine.
 
 ## Notas de Implementación (Optimización y SDD)
 *   **Velocidad de Lectura:** El Frontend solicita la cartelera filtrando por `estado = 'CARTELERA'`. La base de datos devuelve las columnas estándar más el bloque `metadata` completo sin necesidad de hacer múltiples `JOINs` pesados a tablas de "actores" o "trailers".
-*   **JSONB de PostgreSQL:** Se debe garantizar que la entidad de JPA (Panache en Quarkus) esté configurada con tipos de datos de Hibernate que soporten el mapeo nativo hacia `JSONB`.
+*   **JSONB de PostgreSQL:** Se debe garantizar que la entidad de JPA (Hibernate en Spring Boot) esté configurada con tipos de datos que soporten el mapeo nativo hacia `JSONB`.

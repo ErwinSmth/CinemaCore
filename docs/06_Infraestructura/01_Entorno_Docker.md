@@ -33,7 +33,7 @@ Cada microservicio cuenta con un `Dockerfile` optimizado con patrón **Multi-sta
 *   **Servicios:**
     *   `cinestar-api-gateway` (Node.js) -> Puerto `8080`
     *   `cinestar-auth-service` (Spring Boot) -> Puerto `8081`
-    *   `cinestar-movie-service` (Quarkus) -> Puerto `8082`
+    *   `cinestar-movie-service` (Spring Boot) -> Puerto `8082`
 
 ### 1.3. Monitoreo de Logs (Dozzle)
 Para facilitar la depuración, especialmente en entornos mixtos (Windows/Linux), se incluye **Dozzle**.

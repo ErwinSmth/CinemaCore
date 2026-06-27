@@ -2,7 +2,7 @@
 description: Esquema de Base de Datos para Showtime Service (Programación de Funciones)
 related_skills:
   - postgresql
-  - quarkus
+  - spring boot
 ---
 
 # Data Model: Showtime Service (`db_showtime`)

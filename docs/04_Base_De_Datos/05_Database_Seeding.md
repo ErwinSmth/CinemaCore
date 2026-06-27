@@ -11,7 +11,7 @@ Para poder realizar pruebas tanto manuales (vía Bruno) como automatizadas en en
    - Funciones programadas y sus asientos base.
 
 2. **Mecanismo de Inserción (Pendiente de decisión final):**
-   - **Opción A (Flyway):** Incluir un script `V999__insert_seed_data.sql` en las migraciones de Spring Boot / Quarkus, restringido solo al perfil de desarrollo (`dev`).
-   - **Opción B (Código - Runners):** Usar `CommandLineRunner` en Spring Boot o `@Observes StartupEvent` en Quarkus, leyendo archivos JSON en `src/main/resources` e insertando en base de datos si las tablas están vacías.
+   - **Opción A (Flyway):** Incluir un script `V999__insert_seed_data.sql` en las migraciones de Spring Boot, restringido solo al perfil de desarrollo (`dev`).
+   - **Opción B (Código - Runners):** Usar `CommandLineRunner` en Spring Boot, leyendo archivos JSON en `src/main/resources` e insertando en base de datos si las tablas están vacías.
 
 > **Estado:** Pendiente de implementación. Se priorizará cuando se integren los servicios de Películas y Horarios para tener flujos complejos que probar.

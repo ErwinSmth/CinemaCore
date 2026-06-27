@@ -11,8 +11,8 @@ graph TD
     
     subgraph Microservicios
         API --> Auth[Auth Service Spring Boot]
-        API --> Movie[Movie Service Quarkus]
-        API --> Showtime[Showtime Service Quarkus]
+        API --> Movie[Movie Service Spring Boot]
+        API --> Showtime[Showtime Service Spring Boot]
         API --> Seat[Seat Service Spring Boot]
     end
     
@@ -31,7 +31,7 @@ graph TD
 |---|---|---|
 | **API Gateway** | Node.js + Express 5 + TS | Único punto de entrada. Orquesta llamadas y valida JWT. |
 | **Backend Core** | Spring Boot 4 + Java 17 | Manejo seguro de autenticación (`Auth Service`) y lógica de transacciones complejas (`Seat Service` con Optimistic Locking). |
-| **Backend Fast** | Quarkus + Java 17 + Panache | Servicios de alta velocidad y menor consumo para lecturas concurrentes (`Movie Service` y `Showtime Service`). |
+| **Backend Fast** | Spring Boot 4 + Java 17 + JPA | Servicios de alta velocidad y menor consumo para lecturas concurrentes (`Movie Service` y `Showtime Service`). |
 | **Frontend** | Angular + CSS / React | Interfaces dinámicas y responsivas. |
 | **Base de Datos** | PostgreSQL 15 | Cuatro bases de datos separadas (puerto 5433). |
 | **Caché** | Redis | Manejo de bloqueo temporal de asientos y caché de consultas. |

@@ -5,8 +5,8 @@
 Monorepo poliglota de microservicios para sistema de cine (Cinestar).
 - **API Gateway**: Node.js + Express 5 + TypeScript
 - **Auth Service**: Spring Boot 4 + Java 17 + JWT
-- **Movie Service**: Quarkus + Java 17 + Panache
-- **Showtime Service**: Quarkus + Java 17 + Panache
+- **Movie Service**: Spring Boot 4 + Java 17 + Spring Data JPA
+- **Showtime Service**: Spring Boot 4 + Java 17 + Spring Data JPA
 - **Seat Service**: Spring Boot 4 + Java 17 + Optimistic Locking
 - **Database**: PostgreSQL 15 (puerto 5433), 4 databases: db_auth, db_movies, db_showtime, db_seats
 - **Cache**: Redis

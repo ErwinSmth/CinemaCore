@@ -5,7 +5,7 @@ La estrategia de pruebas de **CinemaCore** se basa en el aislamiento de responsa
 ## 1. Pruebas Unitarias (Lógica de Negocio)
 Se enfocan en probar los métodos y clases aislándolos de sus dependencias externas (Base de datos, otros servicios) mediante *Mocks*.
 
-* **Microservicios (Java/Spring/Quarkus):**
+* **Microservicios (Java/Spring Boot):**
   * **Herramientas:** JUnit 5, Mockito.
   * **Alcance:** Servicios de dominio, validaciones de negocio (ej. validación de formato de email, solapamiento de horarios, cálculo de precios de asientos).
 * **API Gateway (Node.js):**
@@ -26,7 +26,7 @@ Verifican que la aplicación interactúa correctamente con los recursos externos
 ### Ejecución de Pruebas Automatizadas
 Para ejecutar las pruebas en tu máquina local, utiliza los siguientes comandos desde la raíz de cada microservicio respectivo:
 - **API Gateway:** `npm test` (requiere `npm install` previo).
-- **Servicios Java (Spring/Quarkus):** `./mvnw test` (Testcontainers requiere que Docker esté en ejecución).
+- **Servicios Java (Spring Boot):** `./mvnw test` (Testcontainers requiere que Docker esté en ejecución).
 
 ## 3. Pruebas End-to-End (E2E) y Contratos (API)
 Pruebas que validan el flujo completo de la aplicación, entrando por el API Gateway y afectando la base de datos real en un entorno controlado (Docker Compose local).

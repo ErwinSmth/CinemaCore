@@ -7,8 +7,8 @@ Basado en las reglas del Monorepo (`AGENTS.md`) y la documentación funcional, e
 |---|---|---|---|
 | **API Gateway** | Orquestación, validación JWT, ruteo. | Node.js + Express 5 + TS | N/A |
 | **Auth Service** | Login, registro, RBAC, firma JWT. | Spring Boot 4 + Java 17 | `db_auth` (PostgreSQL) |
-| **Movie Service** | Catálogo, multimedia, sinopsis. | Quarkus + Java 17 + Panache | `db_movies` (PostgreSQL) |
-| **Showtime Service** | Horarios, salas, formatos (2D/3D). | Quarkus + Java 17 + Panache | `db_showtime` (PostgreSQL) |
+| **Movie Service** | Catálogo, multimedia, sinopsis. | Spring Boot + Java 17 + JPA | `db_movies` (PostgreSQL) |
+| **Showtime Service** | Horarios, salas, formatos (2D/3D). | Spring Boot + Java 17 + JPA | `db_showtime` (PostgreSQL) |
 | **Seat Service** | Estado de butacas, compras, optimistic locking. | Spring Boot 4 + Java 17 | `db_seats` (PostgreSQL) |
 
 ### Notas de Implementación (Migraciones)
