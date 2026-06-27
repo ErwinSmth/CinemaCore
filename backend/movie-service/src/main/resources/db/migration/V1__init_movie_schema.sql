@@ -31,7 +31,9 @@ CREATE TABLE peliculas (
     fecha_estreno DATE,
     estado VARCHAR(20) NOT NULL DEFAULT 'INACTIVO', -- INACTIVO, PRE-ESTRENO, CARTELERA, ELIMINADA, RETIRADA
     restriccion_id INTEGER REFERENCES restriccion_edad(restriccion_id),
-    metadata JSONB -- Almacenará actores, directores, imágenes, trailers anidados
+    metadata JSONB, -- Almacenará actores, directores, imágenes, trailers anidados
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =======================================================================

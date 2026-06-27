@@ -43,7 +43,7 @@ public class MovieController implements MoviesApi {
 
     @Override
     @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response updateMovie(Long id, @jakarta.validation.Valid UpdateMovieRequest updateMovieRequest) {
+    public Response updateMovie(Long id, UpdateMovieRequest updateMovieRequest) {
         return Response.ok(movieService.updateMovie(id, updateMovieRequest)).build();
     }
 

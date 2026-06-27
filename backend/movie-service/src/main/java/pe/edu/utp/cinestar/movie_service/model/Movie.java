@@ -16,6 +16,7 @@ public class Movie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "peliculas_id")
     public Long id;
 
     @Column(name = "tmdb_id", unique = true, nullable = false)
