@@ -35,7 +35,7 @@
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.2",
     "express-rate-limit": "^8.5.2",
-    "http-proxy-middleware": "^4.1.1",
+    "http-proxy-middleware": "^2.0.10",
     "jsonwebtoken": "^9.0.3"
   }
 }

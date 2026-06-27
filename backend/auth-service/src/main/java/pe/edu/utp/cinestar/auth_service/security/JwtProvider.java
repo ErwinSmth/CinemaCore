@@ -36,7 +36,10 @@ public class JwtProvider {
     public String generateToken(String email, Set<String> roles) {
         return Jwts.builder()
                 .setSubject(email)// propietario del token
-                .claim("roles", roles)
+                .claim("upn", email) // Nombre principal de usuario requerido por SmallRye JWT
+                .claim("groups", roles) // SmallRye usa 'groups' por defecto en lugar de 'roles'
+                .claim("roles", roles) // Se mantiene para el validador del API Gateway
+                .setIssuer("cinestar-auth") // Obligatorio según configuración de Quarkus
                 .setIssuedAt(new Date())
                 // calcula el momento en el que el token deja ser valido
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))

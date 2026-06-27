@@ -1,0 +1,14 @@
+# Ignorar todo por defecto en el root
+*
+
+# Excepciones para permitir que los contextos de construccion lean las carpetas de codigo
+!backend/
+!docs/
+
+# Ignorar lo pesado dentro de las subcarpetas
+backend/**/target/
+backend/**/node_modules/
+backend/**/dist/
+backend/**/.idea/
+backend/**/.vscode/
+backend/**/.env

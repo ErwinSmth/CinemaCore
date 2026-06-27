@@ -56,18 +56,19 @@ app.use('/api/v1/auth', authLimiter, authRoutes);
 
 // --- Rutas Reverse Proxy (Microservicios) ---
 
-// Movie Service: Rutas publicas de solo lectura (No requieren JWT)
-app.use('/api/v1/movies', createProxyMiddleware({
+// Movie Service: Proxy con validación selectiva en el API Gateway
+app.use('/api/v1/movies', (req: Request, res: Response, next: NextFunction) => {
+  // Rutas publicas de peliculas
+  const isPublicRoute = req.method === 'GET' && (req.path === '/cartelera' || /^\/\d+$/.test(req.path));
+  
+  if (isPublicRoute) {
+    return next();
+  }
+  // Todo lo demás (incluyendo GET /tmdb/search y GET /admin) requiere JWT
+  authMiddleware(req, res, next);
+}, createProxyMiddleware({
   target: env.MOVIE_SERVICE_URL,
-  changeOrigin: true,
-  pathFilter: (path, req) => req.method === 'GET', // Solo GET es publico
-}));
-
-// Movie Service: Rutas privadas de escritura (Requieren JWT y Propagacion de Identidad)
-app.use('/api/v1/movies', authMiddleware, createProxyMiddleware({
-  target: env.MOVIE_SERVICE_URL,
-  changeOrigin: true,
-  pathFilter: (path, req) => req.method !== 'GET', // POST, PUT, DELETE protegidos
+  changeOrigin: true
 }));
 
 // Seat Service: Las reservas siempre requieren estar logueado
@@ -77,16 +78,14 @@ app.use('/api/v1/seats', authMiddleware, createProxyMiddleware({
 }));
 
 // Showtime Service: Consultas de asientos publicas, programar funciones privado
-app.use('/api/v1/showtimes', createProxyMiddleware({
+app.use('/api/v1/showtimes', createProxyMiddleware((pathname, req) => req.method === 'GET', {
   target: env.SHOWTIME_SERVICE_URL,
-  changeOrigin: true,
-  pathFilter: (path, req) => req.method === 'GET'
+  changeOrigin: true
 }));
 
-app.use('/api/v1/showtimes', authMiddleware, createProxyMiddleware({
+app.use('/api/v1/showtimes', authMiddleware, createProxyMiddleware((pathname, req) => req.method !== 'GET', {
   target: env.SHOWTIME_SERVICE_URL,
-  changeOrigin: true,
-  pathFilter: (path, req) => req.method !== 'GET'
+  changeOrigin: true
 }));
 
 // --- Global Error Handler (OpenAPI Validator & Otros) ---

@@ -1,0 +1,11 @@
+# Asegurar finales de línea LF para scripts de shell y archivos de configuración
+# Esto previene errores de ejecución en contenedores Linux cuando se clona desde Windows
+
+*.sh text eol=lf
+Dockerfile* text eol=lf
+*.sql text eol=lf
+*.properties text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.env.example text eol=lf

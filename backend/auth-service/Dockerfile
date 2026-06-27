@@ -21,6 +21,9 @@ COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 \
     ./mvnw dependency:go-offline -q
 
+# Evitar que Maven consuma toda la RAM durante la compilación
+ENV MAVEN_OPTS="-Xmx256m -XX:TieredStopAtLevel=1"
+
 # Copia el codigo fuente y compila omitiendo tests
 COPY src src
 RUN --mount=type=cache,target=/root/.m2 \

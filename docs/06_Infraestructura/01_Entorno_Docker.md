@@ -1,59 +1,59 @@
 ---
-description: Documentación de la Infraestructura base (Docker)
+description: Documentación de la Infraestructura y Despliegue (Docker)
 related_skills:
   - docker
 ---
 
 # Infraestructura y Contenedores (Docker)
 
-El proyecto **CinemaCore** utiliza un enfoque de contenedores vía **Docker Compose** para orquestar las piezas fundamentales de infraestructura compartida (Bases de Datos, Caché, Message Brokers) requeridas por los microservicios en sus ambientes locales de desarrollo.
+El proyecto **CinemaCore** utiliza un enfoque de orquestación **Full-Stack** vía **Docker Compose**. A diferencia de un entorno donde los servicios se levantan manualmente, nuestro `docker-compose.yml` ubicado en la **raíz del proyecto** (`/`) permite desplegar toda la aplicación (Bases de Datos, Caché, Frontend, Gateway y Microservicios) con un solo comando.
 
-> [!NOTE]
-> Esta infraestructura es **agnóstica** a los lenguajes de los microservicios (Java, Node.js). Los microservicios en desarrollo (ej. Quarkus, Express, Spring Boot) se conectan a estos contenedores mapeados a `localhost`.
+Esta arquitectura está diseñada para ser un entorno de "producción-clonable", ideal para portafolios y para evitar el clásico "en mi máquina sí funciona".
 
 ---
 
-## 1. Topología del `docker-compose.yml`
+## 1. Topología del `docker-compose.yml` (Root)
 
-El archivo central de orquestación se encuentra en `cinestar-infra/docker-compose.yml`. 
+Todos los contenedores están conectados a una red interna llamada `cinestar-network`, lo que permite que se comuniquen entre sí mediante sus nombres de servicio (ej: `http://cinestar-movie-service:8082`) en lugar de `localhost`.
 
-### 1.1. PostgreSQL (Base de Datos Centralizada)
-Aunque la arquitectura es de microservicios (Database-per-service), a nivel de contenedor **local** utilizamos una única instancia de PostgreSQL alojando múltiples bases de datos lógicas (`db_auth`, `db_movies`, etc.)
+### 1.1. Infraestructura Base
+*   **PostgreSQL (`cinestar-postgres`)**:
+    *   **Imagen:** `postgres:15-alpine` (Evitar la etiqueta `latest` por estabilidad).
+    *   **Puerto:** `5433:5432` (Mapeado al 5433 externo para evitar colisiones).
+    *   **Inicialización:** Ejecuta el script montado desde `.docker/postgres/init-db/init.sql` para crear las bases de datos lógicas (`db_auth`, `db_movies`, etc.).
+*   **Redis (`cinestar-redis`)**:
+    *   **Imagen:** `redis:7-alpine`
+    *   **Puerto:** `6379:6379`
+    *   Utilizado para la caché de respuestas rápidas de la cartelera.
 
-*   **Imagen:** `postgres:15`
-*   **Contenedor:** `cinestar-postgres`
-*   **Puerto Mapeado:** `5433:5432` (Se mapea al 5433 en la máquina Host para evitar colisiones con instancias locales preexistentes de Postgres).
-*   **Credenciales:**
-    *   Usuario: `postgres`
-    *   Contraseña: `root`
-*   **Persistencia:** Volumen de Docker `postgres_data` mapeado a `/var/lib/postgresql/data`.
-*   **Inicialización:** Al iniciar un volumen virgen, ejecuta los scripts ubicados en `cinestar-infra/init-db/init.sql` para crear las bases de datos vacías para cada microservicio. Las **estructuras de tablas** se crean de forma descentralizada por Flyway en cada microservicio.
+### 1.2. Microservicios (Multi-stage Alpine)
+Cada microservicio cuenta con un `Dockerfile` optimizado con patrón **Multi-stage build**:
+*   **Optimizaciones:** Compilación aislada con BuildKit (`--mount=type=cache`), ejecución con usuario `no-root`, e imágenes base ultra-ligeras (`eclipse-temurin:17-jre-alpine` o `node:20-alpine`).
+*   **Compatibilidad Windows/WSL2:** Los servicios Java están tuneados estrictamente en memoria (`-Xms64m -Xmx128m` y `SerialGC`) para no saturar los hosts de los desarrolladores.
+*   **Servicios:**
+    *   `cinestar-api-gateway` (Node.js) -> Puerto `8080`
+    *   `cinestar-auth-service` (Spring Boot) -> Puerto `8081`
+    *   `cinestar-movie-service` (Quarkus) -> Puerto `8082`
 
-### 1.2. Redis (Caché Centralizado)
-Utilizado para mitigar la sobrecarga de consultas estáticas o semánticas (ej. la cartelera pública de películas) y optimizar los tiempos de respuesta.
-
-*   **Imagen:** `redis:7-alpine` (Versión aligerada basada en Alpine Linux).
-*   **Contenedor:** `cinestar-redis`
-*   **Puerto Mapeado:** `6379:6379`
-*   **Comportamiento (Warming & Cache-Aside):** 
-    *   Configurado con `--save 60 1` y `--loglevel warning`.
-    *   Los microservicios como el *Movie Service* (Quarkus) almacenarán allí los JSON completos de las respuestas de TMDB o de su propia API pública para entregar respuestas en latencia menor a 10ms.
+### 1.3. Monitoreo de Logs (Dozzle)
+Para facilitar la depuración, especialmente en entornos mixtos (Windows/Linux), se incluye **Dozzle**.
+*   **Imagen:** `amir20/dozzle:v8`
+*   **Puerto:** `9999:8080`
+*   Permite a los desarrolladores entrar a `http://localhost:9999` en su navegador para buscar, filtrar y visualizar los logs de cualquier contenedor en tiempo real, sin usar la terminal.
 
 ---
 
 ## 2. Flujo de Trabajo del Desarrollador (Developer Workflow)
 
-Para iniciar a programar en cualquier microservicio del monorepo, el requisito previo indispensable es levantar la infraestructura base:
+Para levantar TODO el ecosistema de Cinestar, asegúrate de tener tu archivo `.env` en la raíz (creado a partir de `.env.example`) y ejecuta:
 
 ```bash
-# 1. Navegar a la carpeta de infraestructura
-cd cinestar-infra
+# 1. En la raíz del proyecto, construir y levantar todo en segundo plano
+docker compose up -d --build
 
-# 2. Levantar los servicios en segundo plano (detached mode)
-docker-compose up -d
+# 2. Ver los logs en vivo desde el navegador
+# -> Abrir http://localhost:9999
 
-# 3. Verificar que los contenedores estén sanos (Up)
-docker-compose ps
+# 3. Detener todo y limpiar la red
+docker compose down
 ```
-
-Una vez ejecutados los contenedores, las aplicaciones (API Gateway en puerto 8080, Movie Service en 8082, etc.) se comunican con `localhost:5433` (Postgres) y `localhost:6379` (Redis).

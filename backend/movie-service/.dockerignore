@@ -1,5 +1,11 @@
-*
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
+# Directorios de build y compilacion
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Archivos de configuracion local
+*.env

@@ -1,58 +1,51 @@
-# ============================================================
-# Fase 1: Construccion
-# Instala todas las dependencias (dev + prod) y compila el TS
-# ============================================================
-FROM node:22-alpine AS builder
+# syntax=docker/dockerfile:1
 
-# Directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Copiamos primero solo los manifiestos para aprovechar la cache de capas
-# Si package.json no cambia, Docker no reinstala las dependencias
-COPY package.json package-lock.json ./
-
-# Instalamos TODAS las dependencias (incluyendo devDependencies para el compilador)
-RUN npm ci
-
-# Copiamos el código fuente y la configuracion de TypeScript
-COPY tsconfig.json ./
-COPY src/ ./src/
-
-# Compilamos TypeScript -> JavaScript en la carpeta /app/dist
-RUN npx tsc --project tsconfig.json
-
-# ============================================================
-# Fase 2: Produccion
-# Imagen final ligera: solo el JS compilado + dependencias de prod
-# ============================================================
-FROM node:22-alpine AS production
-
-# Metadatos de la imagen
-LABEL maintainer="Cinestar Backend Team"
-LABEL service="api-gateway"
-
-# Creamos un usuario no-root por seguridad (buena practica en produccion)
-RUN addgroup -S cinestar && adduser -S gateway -G cinestar
+# ================================
+# Fase 1: Construccion (Node.js)
+# ================================
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiamos solo los manifiestos para instalar UNICAMENTE dependencias de produccion
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# Copiar configuración de dependencias
+COPY backend/api-gateway/package.json backend/api-gateway/package-lock.json ./
 
-# Copiamos el JS compilado desde la etapa builder
-COPY --from=builder /app/dist ./dist
+# Instalar TODAS las dependencias (incluyendo devDependencies para compilar TS)
+RUN npm ci --legacy-peer-deps
 
-# Cambiamos al usuario no-root
-USER gateway
+# Copiar el código fuente y compilar TypeScript
+COPY backend/api-gateway/tsconfig.json ./
+COPY backend/api-gateway/src ./src
+RUN npm run build
 
-# Puerto expuesto (debe coincidir con PORT en tu .env)
-EXPOSE 3000
+# ================================
+# Fase 2: Ejecucion (Produccion)
+# ================================
+FROM node:20-alpine AS runner
 
-# Healthcheck: Docker comprobara este endpoint cada 30s
-# Si /health responde OK, el contenedor se marca como "healthy"
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:3000/health || exit 1
+WORKDIR /app
 
-# Punto de entrada: ejecuta el JS compilado directamente con Node (sin ts-node-dev)
+# Crear usuario no-root por seguridad
+RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+
+# Copiar solo package.json y package-lock.json
+COPY backend/api-gateway/package.json backend/api-gateway/package-lock.json ./
+
+# Instalar SOLO las dependencias de producción (ahorra muchísimo espacio)
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
+
+# Copiar el código compilado desde la fase anterior
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+
+# Copiar el yaml de OpenAPI
+COPY docs/api-spec.yml /docs/api-spec.yml
+
+# Cambiar de dueño
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+EXPOSE 8080
+
+# Comando de inicio usando Node directamente sobre el JS compilado (mayor rendimiento)
 CMD ["node", "dist/index.js"]

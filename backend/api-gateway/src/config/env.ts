@@ -1,4 +1,8 @@
-import 'dotenv/config'; // carga las variables del archivo .env
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Carga las variables desde la raíz del monorepo (CinemaCore/.env)
+dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
 
 // Funcion utilizada para leer variables de entorno de forma segura
