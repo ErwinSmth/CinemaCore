@@ -1,62 +1,67 @@
 package pe.edu.utp.cinestar.movie_service.controller;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
-import pe.edu.utp.cinestar.movie_service.controller.api.MoviesApi;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
+import pe.edu.utp.cinestar.movie_service.model.Movie;
 import pe.edu.utp.cinestar.movie_service.service.MovieService;
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
+
 import java.net.URI;
+import java.util.List;
 
-@ApplicationScoped
-public class MovieController implements MoviesApi {
+@RestController
+@RequestMapping("/movies")
+@RequiredArgsConstructor
+public class MovieController {
 
-    @Inject
-    MovieService movieService;
+    private final MovieService movieService;
 
-    @Override
-    @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response searchTmdbMovies(String query) {
-        return Response.ok(movieService.searchTmdbMovies(query)).build();
+    @GetMapping(value = "/tmdb/search", produces = "application/json")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<String> searchTmdbMovies(@RequestParam("query") String query) {
+        return ResponseEntity.ok(movieService.searchTmdbMovies(query).toString());
     }
 
-    @Override
-    @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response importMovie(Integer tmdbId) {
+    @PostMapping("/tmdb/import/{tmdbId}")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<String> importMovie(@PathVariable("tmdbId") Integer tmdbId) {
         Long idLocal = movieService.importMovie(tmdbId);
-        return Response.created(URI.create("/movies/" + idLocal)).entity("{\"id\": " + idLocal + "}").build();
+        return ResponseEntity.created(URI.create("/movies/" + idLocal)).body("{\"id\": " + idLocal + "}");
     }
 
-    @Override
-    @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response getAllMoviesAdmin(String status, String search) {
-        return Response.ok(movieService.getAllMoviesAdmin(status, search)).build();
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<List<Movie>> getAllMoviesAdmin(
+            @RequestParam(value = "status", required = false) String status, 
+            @RequestParam(value = "search", required = false) String search) {
+        return ResponseEntity.ok(movieService.getAllMoviesAdmin(status, search));
     }
 
-    @Override
-    @PermitAll
-    public Response getMovieById(Long id) {
-        return Response.ok(movieService.getMovieById(id)).build();
+    @GetMapping("/{id}")
+    public ResponseEntity<Movie> getMovieById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(movieService.getMovieById(id));
     }
 
-    @Override
-    @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response updateMovie(Long id, UpdateMovieRequest updateMovieRequest) {
-        return Response.ok(movieService.updateMovie(id, updateMovieRequest)).build();
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<Movie> updateMovie(@PathVariable("id") Long id, @RequestBody UpdateMovieRequest updateMovieRequest) {
+        return ResponseEntity.ok(movieService.updateMovie(id, updateMovieRequest));
     }
 
-    @Override
-    @RolesAllowed("ROLE_ADMINISTRADOR")
-    public Response deleteMovie(Long id) {
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<Void> deleteMovie(@PathVariable("id") Long id) {
         movieService.deleteMovie(id);
-        return Response.noContent().build();
+        return ResponseEntity.noContent().build();
     }
 
-    @Override
-    @PermitAll
-    public Response getCartelera(String genre, String search) {
-        return Response.ok(movieService.getCartelera(genre, search)).build();
+    @GetMapping("/cartelera")
+    public ResponseEntity<List<MovieCarteleraResponse>> getCartelera(
+            @RequestParam(value = "genre", required = false) String genre, 
+            @RequestParam(value = "search", required = false) String search) {
+        return ResponseEntity.ok(movieService.getCartelera(genre, search));
     }
 }

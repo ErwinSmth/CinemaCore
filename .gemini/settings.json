@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "codegraph": {
-      "type": "stdio",
-      "command": "codegraph",
-      "args": [
-        "serve",
-        "--mcp"
-      ]
+    "codebase-memory": {
+      "command": "/home/jesusd/.local/bin/codebase-memory-mcp",
+      "args": []
     }
   }
 }

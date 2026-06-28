@@ -1,45 +1,48 @@
 package pe.edu.utp.cinestar.movie_service.repository.tmdb;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
-import org.eclipse.microprofile.rest.client.annotation.ClientHeaderParam;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.smallrye.mutiny.Uni;
-import org.eclipse.microprofile.faulttolerance.Retry;
-import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
-/**
- * Cliente REST Reactivo para The Movie Database (TMDB).
- * La URL base y los timeouts se configuran en application.properties bajo el prefijo "quarkus.rest-client.tmdb-api".
- */
-@RegisterRestClient(configKey = "tmdb-api")
-@ClientHeaderParam(name = "Authorization", value = "Bearer ${tmdb.api.token}")
-@ClientHeaderParam(name = "accept", value = "application/json")
-public interface TmdbRestClient {
+@Service
+public class TmdbRestClient {
 
-    /**
-     * Busca películas por título.
-     * Endpoint: GET /search/movie?query={query}&language=es-MX
-     */
-    @GET
-    @Path("/search/movie")
-    @Timeout(2000)
-    @Retry(maxRetries = 2)
-    Uni<JsonNode> searchMovies(@QueryParam("query") String query, 
-                               @QueryParam("language") String language);
+    @Value("${tmdb.api.url}")
+    private String apiUrl;
 
-    /**
-     * Obtiene el detalle de una película, incluyendo créditos, videos (trailers) e imágenes (posters).
-     * Endpoint: GET /movie/{movie_id}?append_to_response=credits,videos,images&language=es-MX
-     */
-    @GET
-    @Path("/movie/{movie_id}")
-    @Timeout(2000)
-    @Retry(maxRetries = 2)
-    Uni<JsonNode> getMovieDetails(@PathParam("movie_id") int movieId, 
-                                  @QueryParam("append_to_response") String appendToResponse,
-                                  @QueryParam("language") String language);
+    @Value("${tmdb.api.token}")
+    private String apiToken;
+
+    private final RestTemplate restTemplate;
+
+    public TmdbRestClient() {
+        this.restTemplate = new RestTemplate();
+    }
+
+    private HttpEntity<String> getHttpEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiToken);
+        headers.set("accept", "application/json");
+        return new HttpEntity<>(headers);
+    }
+
+    public JsonNode searchMovies(String query, String language) {
+        String url = apiUrl + "/search/movie?query=" + query + "&language=" + language;
+        
+        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), JsonNode.class);
+        return response.getBody();
+    }
+
+    public JsonNode getMovieDetails(int movieId, String appendToResponse, String language) {
+        String url = apiUrl + "/movie/" + movieId + "?append_to_response=" + appendToResponse + "&language=" + language;
+                
+        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), JsonNode.class);
+        return response.getBody();
+    }
 }

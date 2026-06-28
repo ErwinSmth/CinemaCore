@@ -10,8 +10,15 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 @Entity
 @Table(name = "peliculas")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Movie {
 
     @Id

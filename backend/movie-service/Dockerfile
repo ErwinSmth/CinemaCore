@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ================================
-# Fase 1: Construccion (Quarkus)
+# Fase 1: Construccion (Spring Boot)
 # ================================
 FROM eclipse-temurin:17-jdk-alpine AS builder
 
@@ -35,24 +35,21 @@ FROM eclipse-temurin:17-jre-alpine AS runner
 WORKDIR /app
 
 # Crear usuario seguro
-RUN addgroup -S quarkus && adduser -S quarkus -G quarkus
+RUN addgroup -S spring && adduser -S spring -G spring
 
-# Quarkus empaqueta la aplicacion en /target/quarkus-app/
-COPY --from=builder --chown=quarkus:quarkus /app/target/quarkus-app/lib/ /app/lib/
-COPY --from=builder --chown=quarkus:quarkus /app/target/quarkus-app/*.jar /app/
-COPY --from=builder --chown=quarkus:quarkus /app/target/quarkus-app/app/ /app/app/
-COPY --from=builder --chown=quarkus:quarkus /app/target/quarkus-app/quarkus/ /app/quarkus/
+# Copia unicamente el jar generado
+COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
 
-USER quarkus
+USER spring
 
 EXPOSE 8082
 
-# Tuning de RAM optimizado para entornos de escasos recursos (WSL2/Portafolios)
+# Tuning de RAM optimizado para entornos de escasos recursos
 ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \
     "-Xms64m", \
     "-Xmx128m", \
     "-XX:+UseSerialGC", \
     "-XX:TieredStopAtLevel=1", \
-    "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", \
-    "-jar", "quarkus-run.jar"]
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]

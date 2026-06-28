@@ -1,38 +1,42 @@
 package pe.edu.utp.cinestar.movie_service;
 
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import pe.edu.utp.cinestar.movie_service.repository.MovieRepository;
 
 import java.util.Collections;
 
-import static io.restassured.RestAssured.given;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@QuarkusTest
-public class MovieServiceCacheTest {
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
+class MovieServiceCacheTest extends AbstractIntegrationTest {
 
-    @InjectMock
-    MovieRepository movieRepository;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private MovieRepository movieRepository;
 
     @BeforeEach
     public void setup() {
-        // Configuramos el mock para que devuelva una lista vacía por defecto
         Mockito.when(movieRepository.findCartelera(any(), any())).thenReturn(Collections.emptyList());
     }
 
     @Test
-    public void testScenario3_RedisCacheAside() {
-        // Ejecutamos la petición 3 veces
-        given().when().get("/movies").then().statusCode(200);
-        given().when().get("/movies").then().statusCode(200);
-        given().when().get("/movies").then().statusCode(200);
+    public void testScenario3_RedisCacheAside() throws Exception {
+        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
+        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
+        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
 
-        // Verificamos que el repositorio solo fue llamado UNA vez (las otras dos salieron de Redis)
         Mockito.verify(movieRepository, Mockito.times(1)).findCartelera(any(), any());
     }
 }

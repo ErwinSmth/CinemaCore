@@ -37,13 +37,13 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
     // verificamos el token con la llave secreta compartida
     // as le dice a TypeScript que estructura esperamos dentro del token
     const decoded = jwt.verify(token, env.JWT_SECRET) as { sub: string; roles: string[] };
-    
+
     // inyectamos los datos del usuario en la peticion para que el controlador los use (legacy)
     req.user = decoded;
 
     // Zero Trust Identity Propagation: Inyectamos en las cabeceras HTTP salientes
     req.headers['x-user-id'] = decoded.sub; // el email o ID viaja en el subject (sub)
-    req.headers['x-user-roles'] = decoded.roles ? decoded.roles.join(',') : '';
+    req.headers['x-user-role'] = decoded.roles ? decoded.roles.join(',') : '';
 
     // pasamos al siguiente middleware o controlador (Proxy)
     next();

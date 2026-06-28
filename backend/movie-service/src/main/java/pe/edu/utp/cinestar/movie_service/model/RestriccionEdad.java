@@ -2,8 +2,15 @@ package pe.edu.utp.cinestar.movie_service.model;
 
 import jakarta.persistence.*;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 @Entity
 @Table(name = "restriccion_edad")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RestriccionEdad {
 
     @Id

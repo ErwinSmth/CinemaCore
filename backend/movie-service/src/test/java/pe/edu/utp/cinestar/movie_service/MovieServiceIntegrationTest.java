@@ -1,86 +1,94 @@
 package pe.edu.utp.cinestar.movie_service;
 
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
-import io.restassured.http.ContentType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 import pe.edu.utp.cinestar.movie_service.model.Movie;
 import pe.edu.utp.cinestar.movie_service.repository.MovieRepository;
+import pe.edu.utp.cinestar.movie_service.repository.tmdb.TmdbRestClient;
 
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@QuarkusTest
-@QuarkusTestResource(WiremockTmdbResource.class)
-public class MovieServiceIntegrationTest {
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
+public class MovieServiceIntegrationTest extends AbstractIntegrationTest {
 
-    @Inject
-    MovieRepository movieRepository;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper mapper;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    @Autowired
+    private pe.edu.utp.cinestar.movie_service.repository.RestriccionEdadRepository restriccionEdadRepository;
+
+    @MockitoBean
+    private TmdbRestClient tmdbRestClient;
 
     @Test
-    @TestSecurity(user = "admin", roles = {"ROLE_ADMINISTRADOR"})
-    @JwtSecurity(claims = {@Claim(key = "email", value = "admin@cinestar.pe")})
-    public void testScenario1_TmdbSearchSuccess() {
-        given()
-            .queryParam("query", "Inception")
-            .when().get("/movies/tmdb/search")
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("results[0].title", equalTo("Inception"))
-            .body("results[0].id", equalTo(12345));
+    @WithMockUser(roles = "ADMINISTRADOR")
+    public void testScenario1_TmdbSearchSuccess() throws Exception {
+        com.fasterxml.jackson.databind.JsonNode mockNode = mapper.readTree("{\"results\": [{\"id\": 12345, \"title\": \"Inception\"}]}");
+        when(tmdbRestClient.searchMovies(eq("Inception"), anyString()))
+                .thenReturn(mockNode);
+
+        mockMvc.perform(get("/movies/tmdb/search")
+                .param("query", "Inception"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.results[0].title", equalTo("Inception")))
+                .andExpect(jsonPath("$.results[0].id", equalTo(12345)));
     }
 
     @Test
-    @TestSecurity(user = "admin", roles = {"ROLE_ADMINISTRADOR"})
-    @JwtSecurity(claims = {@Claim(key = "email", value = "admin@cinestar.pe")})
-    public void testScenario2_TmdbFailureReturns502() {
-        given()
-            .when().post("/movies/tmdb/import/999") // Este ID está mockeado para devolver 500
-            .then()
-            .statusCode(502) // Bad Gateway
-            .contentType(ContentType.JSON)
-            .body("status", equalTo(502))
-            .body("error", notNullValue());
+    @WithMockUser(roles = "ADMINISTRADOR")
+    public void testScenario2_TmdbFailureReturns502() throws Exception {
+        when(tmdbRestClient.getMovieDetails(eq(999), anyString(), anyString()))
+                .thenThrow(new RuntimeException("Simulated API Error"));
+
+        mockMvc.perform(post("/movies/tmdb/import/999"))
+                .andExpect(status().isBadGateway())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", equalTo(502)))
+                .andExpect(jsonPath("$.error", notNullValue()));
     }
 
     @Test
-    @TestSecurity(user = "admin", roles = {"ROLE_ADMINISTRADOR"})
-    @JwtSecurity(claims = {@Claim(key = "email", value = "admin@cinestar.pe")})
-    public void testScenario4_SoftDelete() {
-        // Preparar DB: Insertar película a mano para luego borrarla
+    @WithMockUser(roles = "ADMINISTRADOR")
+    public void testScenario4_SoftDelete() throws Exception {
         Movie testMovie = new Movie();
-        testMovie.tmdbId = 101010;
-        testMovie.titulo = "Pelicula Para Borrar";
-        testMovie.estado = "PRE-ESTRENO";
+        testMovie.setTmdbId(101010);
+        testMovie.setTitulo("Pelicula Para Borrar");
+        testMovie.setEstado("PRE-ESTRENO");
         pe.edu.utp.cinestar.movie_service.model.RestriccionEdad r = new pe.edu.utp.cinestar.movie_service.model.RestriccionEdad();
-        r.id = 1;
-        testMovie.restriccionEdad = r;
-        
-        insertMovieForTest(testMovie);
-        Long idLocal = testMovie.id;
+        r.setCodigo("APT");
+        r.setDescripcion("Apto");
+        r = restriccionEdadRepository.save(r);
+        testMovie.setRestriccionEdad(r);
 
-        // Ejecutar Soft Delete via REST
-        given()
-            .when().delete("/movies/" + idLocal)
-            .then()
-            .statusCode(204); // No Content
+        Movie savedMovie = movieRepository.save(testMovie);
+        Long idLocal = savedMovie.getId();
 
-        // Validar directamente en DB
-        Movie deletedMovie = movieRepository.findById(idLocal);
-        assertEquals("ELIMINADA", deletedMovie.estado, "La película debe permanecer en DB pero con estado ELIMINADA");
-    }
+        mockMvc.perform(delete("/movies/" + idLocal))
+                .andExpect(status().isNoContent());
 
-    @Transactional
-    void insertMovieForTest(Movie movie) {
-        movieRepository.persist(movie);
+        Movie deletedMovie = movieRepository.findById(idLocal).orElseThrow();
+        assertEquals("ELIMINADA", deletedMovie.getEstado(), "La película debe permanecer en DB pero con estado ELIMINADA");
     }
 }
