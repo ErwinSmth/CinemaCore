@@ -30,6 +30,43 @@ components:
           type: string
         restriccion_edad:
           type: string
+    MovieDetailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+        sinopsis:
+          type: string
+        duracion_min:
+          type: integer
+        fecha_estreno:
+          type: string
+          format: date
+        estado:
+          type: string
+        restriccion_edad:
+          type: string
+        poster_path:
+          type: string
+        backdrop_path:
+          type: string
+        director:
+          type: string
+        actores:
+          type: array
+          items:
+            type: string
+        generos:
+          type: array
+          items:
+            type: string
+        trailers:
+          type: array
+          items:
+            type: string
 paths:
   # ==========================================
   # AUTHENTICATION SERVICE
@@ -182,7 +219,11 @@ paths:
             format: int64
       responses:
         '200':
-          description: Documento detallado (JSONB extraído)
+          description: Documento detallado de la película con metadata JSONB extraída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailResponse'
         '404':
           description: MovieNotFoundException
     put:

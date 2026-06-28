@@ -12,6 +12,14 @@ const app = express();
 
 // --- Middlewares Globales de Seguridad ---
 
+// 0. Prevención de Spoofing (Zero-Trust)
+// Eliminamos las cabeceras inyectables externamente para que solo authMiddleware pueda setearlas.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  delete req.headers['x-user-id'];
+  delete req.headers['x-user-role'];
+  next();
+});
+
 // 1. CORS Estricto: Solo permitir dominios del frontend oficial (cambiar en produccion)
 app.use(cors({
   origin: ['http://localhost:4200', 'http://localhost:3000'], // angular o react dev
@@ -58,8 +66,8 @@ app.use('/api/v1/auth', authLimiter, authRoutes);
 
 // Movie Service: Proxy con validación selectiva en el API Gateway
 app.use('/api/v1/movies', (req: Request, res: Response, next: NextFunction) => {
-  // Rutas publicas de peliculas
-  const isPublicRoute = req.method === 'GET' && (req.path === '/cartelera' || /^\/\d+$/.test(req.path));
+  // Rutas publicas de peliculas (Cartelera es '/' en el servicio, y detalle es '/:id')
+  const isPublicRoute = req.method === 'GET' && (req.path === '/' || req.path === '' || req.path === '/cartelera' || /^\/\d+$/.test(req.path));
   
   if (isPublicRoute) {
     return next();

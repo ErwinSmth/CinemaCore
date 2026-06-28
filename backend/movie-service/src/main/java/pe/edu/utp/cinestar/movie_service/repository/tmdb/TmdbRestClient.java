@@ -10,6 +10,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import java.net.URI;
+
 @Service
 public class TmdbRestClient {
 
@@ -33,16 +35,26 @@ public class TmdbRestClient {
     }
 
     public JsonNode searchMovies(String query, String language) {
-        String url = apiUrl + "/search/movie?query=" + query + "&language=" + language;
-        
-        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), JsonNode.class);
+        URI uri = UriComponentsBuilder.fromUriString(apiUrl + "/search/movie")
+                .queryParam("query", query)
+                .queryParam("language", language)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<JsonNode> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), JsonNode.class);
         return response.getBody();
     }
 
     public JsonNode getMovieDetails(int movieId, String appendToResponse, String language) {
-        String url = apiUrl + "/movie/" + movieId + "?append_to_response=" + appendToResponse + "&language=" + language;
-                
-        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, getHttpEntity(), JsonNode.class);
+        URI uri = UriComponentsBuilder.fromUriString(apiUrl + "/movie/" + movieId)
+                .queryParam("append_to_response", appendToResponse)
+                .queryParam("language", language)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<JsonNode> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), JsonNode.class);
         return response.getBody();
     }
 }

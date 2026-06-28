@@ -26,6 +26,9 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        // Sin JWT_SECRET — el movie-service ya no valida tokens
+        registry.add("tmdb.api.key", () -> "");
+        registry.add("tmdb.api.token", () -> "");
     }
 
     @org.springframework.boot.test.context.TestConfiguration

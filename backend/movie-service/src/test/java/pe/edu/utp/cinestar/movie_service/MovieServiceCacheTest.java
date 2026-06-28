@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 class MovieServiceCacheTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -32,11 +32,13 @@ class MovieServiceCacheTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testScenario3_RedisCacheAside() throws Exception {
-        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
-        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
-        mockMvc.perform(get("/movies/cartelera")).andExpect(status().isOk());
+    public void testScenario3_CacheAside_RepositoryLlamadoUnaSolaVez() throws Exception {
+        // GET /movies es la ruta pública de cartelera (sin autenticación requerida)
+        mockMvc.perform(get("/movies")).andExpect(status().isOk());
+        mockMvc.perform(get("/movies")).andExpect(status().isOk());
+        mockMvc.perform(get("/movies")).andExpect(status().isOk());
 
+        // A pesar de 3 peticiones, el repositorio solo fue consultado 1 vez (caché hit en las 2 siguientes)
         Mockito.verify(movieRepository, Mockito.times(1)).findCartelera(any(), any());
     }
 }

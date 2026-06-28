@@ -13,12 +13,14 @@ import pe.edu.utp.cinestar.movie_service.exception.MovieNotFoundException;
 import pe.edu.utp.cinestar.movie_service.exception.TMDBIntegrationException;
 import pe.edu.utp.cinestar.movie_service.model.Movie;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
+import pe.edu.utp.cinestar.movie_service.model.dto.MovieDetailResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
 import pe.edu.utp.cinestar.movie_service.model.RestriccionEdad;
 import pe.edu.utp.cinestar.movie_service.repository.MovieRepository;
 import pe.edu.utp.cinestar.movie_service.repository.RestriccionEdadRepository;
 import pe.edu.utp.cinestar.movie_service.repository.tmdb.TmdbRestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,7 +65,11 @@ public class MovieService {
 
         movie.setTitulo(tmdbData.has("title") ? tmdbData.get("title").asText() : "");
         movie.setSinopsis(tmdbData.has("overview") ? tmdbData.get("overview").asText() : "");
-        
+
+        if (tmdbData.has("runtime") && !tmdbData.get("runtime").isNull()) {
+            movie.setDuracionMin(tmdbData.get("runtime").asInt());
+        }
+
         ObjectNode metadataNode = objectMapper.createObjectNode();
 
         if (tmdbData.has("poster_path") && !tmdbData.get("poster_path").isNull()) {
@@ -121,14 +127,17 @@ public class MovieService {
         return movieRepository.findByStatusAndSearch(status, search);
     }
 
-    public Movie getMovieById(Long id) {
-        return movieRepository.findById(id).orElseThrow(() -> new MovieNotFoundException("Película no encontrada en la BD local con ID: " + id));
+    public MovieDetailResponse getMovieById(Long id) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException("Película no encontrada en la BD local con ID: " + id));
+        return toDetailResponse(movie);
     }
 
     @Transactional
     @CacheEvict(value = "cartelera", allEntries = true)
     public Movie updateMovie(Long id, UpdateMovieRequest req) {
-        Movie movie = getMovieById(id);
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException("Película no encontrada con ID: " + id));
         if (req.getTitle() != null) movie.setTitulo(req.getTitle());
         if (req.getOverview() != null) movie.setSinopsis(req.getOverview());
         if (req.getAgeRating() != null) {
@@ -141,15 +150,23 @@ public class MovieService {
     @Transactional
     @CacheEvict(value = "cartelera", allEntries = true)
     public void deleteMovie(Long id) {
-        Movie movie = getMovieById(id);
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException("Película no encontrada con ID: " + id));
         movie.setEstado("ELIMINADA");
         movieRepository.save(movie);
     }
 
     @Cacheable(value = "cartelera")
     public List<MovieCarteleraResponse> getCartelera(String genre, String search) {
-        List<Movie> cartelera = movieRepository.findCartelera(genre, search);
-        
+        // Construir el fragmento JSON para el filtro GIN de género
+        String genreJson = null;
+        if (genre != null && !genre.isBlank()) {
+            genreJson = "{\"generos\": [\"" + genre + "\"]}";
+        }
+
+        // Corrección: los @Param del repositorio son (search, genreJson) en ese orden
+        List<Movie> cartelera = movieRepository.findCartelera(search, genreJson);
+
         return cartelera.stream().map(m -> {
             MovieCarteleraResponse dto = new MovieCarteleraResponse();
             dto.setId(m.getId());
@@ -161,5 +178,41 @@ public class MovieService {
             dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    private MovieDetailResponse toDetailResponse(Movie m) {
+        MovieDetailResponse dto = new MovieDetailResponse();
+        dto.setId(m.getId());
+        dto.setTitulo(m.getTitulo());
+        dto.setSinopsis(m.getSinopsis());
+        dto.setDuracionMin(m.getDuracionMin());
+        dto.setFechaEstreno(m.getFechaEstreno());
+        dto.setEstado(m.getEstado());
+        dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
+
+        JsonNode meta = m.getMetadata();
+        if (meta != null) {
+            if (meta.has("posterPath")) dto.setPosterPath(meta.get("posterPath").asText());
+            if (meta.has("backdropPath")) dto.setBackdropPath(meta.get("backdropPath").asText());
+            if (meta.has("director")) dto.setDirector(meta.get("director").asText());
+
+            if (meta.has("actores") && meta.get("actores").isArray()) {
+                List<String> actores = new ArrayList<>();
+                meta.get("actores").forEach(a -> actores.add(a.asText()));
+                dto.setActores(actores);
+            }
+            if (meta.has("generos") && meta.get("generos").isArray()) {
+                List<String> generos = new ArrayList<>();
+                meta.get("generos").forEach(g -> generos.add(g.asText()));
+                dto.setGeneros(generos);
+            }
+            if (meta.has("trailers") && meta.get("trailers").isArray()) {
+                List<String> trailers = new ArrayList<>();
+                meta.get("trailers").forEach(t -> trailers.add(t.asText()));
+                dto.setTrailers(trailers);
+            }
+        }
+
+        return dto;
     }
 }
