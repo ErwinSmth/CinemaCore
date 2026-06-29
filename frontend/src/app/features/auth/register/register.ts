@@ -37,7 +37,7 @@ export class Register {
     this.authService.register(this.registerForm.value).subscribe({
       next: () => {
         this.isLoading.set(false);
-        // El usuario ya se auto-logueó en el servicio, vamos al Home
+        // El usuario registrado por esta vía pública es siempre Cliente
         this.router.navigate(['/']);
       },
       error: (err) => {

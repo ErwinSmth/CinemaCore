@@ -35,7 +35,13 @@ export class Login {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/']);
+        if (this.authService.isAdmin()) {
+          this.router.navigate(['/admin']);
+        } else if (this.authService.isTaquillero()) {
+          this.router.navigate(['/taquilla']);
+        } else {
+          this.router.navigate(['/']);
+        }
       },
       error: (err) => {
         this.isLoading.set(false);

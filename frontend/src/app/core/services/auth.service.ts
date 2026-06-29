@@ -83,4 +83,12 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
+
+  isAdmin(): boolean {
+    return this.currentUserRoles().includes('ROLE_ADMINISTRADOR');
+  }
+
+  isTaquillero(): boolean {
+    return this.currentUserRoles().includes('ROLE_TAQUILLERO');
+  }
 }

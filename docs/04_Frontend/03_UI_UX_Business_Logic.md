@@ -2,12 +2,17 @@
 
 Este documento detalla las reglas de negocio y decisiones de diseño para los componentes visuales de la interfaz, asegurando consistencia a medida que el proyecto crece.
 
-## 1. Carrusel Principal (Hero Banner)
-- **Películas mostradas**: Títulos destacados (tanto de cartelera como próximos estrenos con preventa).
-- **Indicador de Estado**: 
-  - Si es estreno futuro: Etiqueta "Próximamente".
-  - Si es preventa activa: El botón principal debe decir "COMPRAR PREVENTA".
-  - Si está en cartelera: El botón principal dice "COMPRAR ENTRADAS".
+## 1. Carrusel Principal (Hero Banner) y Algoritmo de Relevancia
+- **Población Dinámica**: El Hero Banner NO debe ser estático. Se llenará con las películas más relevantes dictadas por el API Gateway (fusionando data de `movie-service` y `showtime-service`).
+- **Score de Relevancia (Priority Score)**:
+  1. Películas con **preventa activa** (máxima prioridad de negocio).
+  2. Películas en cartelera con **alta cantidad de funciones activas**.
+  3. Películas "Muy Esperadas" marcadas manualmente por el Admin (a través de un flag `{"isFeatured": true}` inyectado en la columna `metadata` JSONB de la BD).
+- **Indicadores de Botón Principal (State Flags)**: 
+  El Backend enviará banderas calculadas (`hasActivePresale`, `hasActiveShowtimes`). El UI reaccionará así:
+  - Si es estreno y `!hasActivePresale`: El botón dirá **"PRÓXIMAMENTE"** (solo lectura o trailer).
+  - Si es estreno y `hasActivePresale`: El botón dirá **"COMPRAR PREVENTA"**.
+  - Si está en cartelera y `hasActiveShowtimes`: El botón dirá **"COMPRAR ENTRADAS"**.
 
 ## 2. Sección "Próximos Estrenos" (Pre-Estrenos)
 Las películas en estado `PRE-ESTRENO` se muestran aquí. Existen sub-estados importantes:
@@ -18,7 +23,7 @@ Las películas en estado `PRE-ESTRENO` se muestran aquí. Existen sub-estados im
     1. `Comprar Preventa` (Rojo destacado).
     2. `Ver Tráiler` (Secundario/Glassmorphism).
 
-*Nota técnica*: Esta lógica dependerá de un flag como `hasActivePresale: true` enviado por el backend (Microservicio de Funciones/Cartelera) en el futuro.
+*Nota técnica Integración Backend*: El cálculo de estas banderas se hará en tiempo real en el **API Gateway**. Consultará las películas del catálogo (`movie-service`) y verificará con `showtime-service` si existen funciones futuras registradas. No se necesita modificar el esquema de base de datos actual para esto, la tabla `funcion` proveerá esta data.
 
 ## 3. Tráilers Destacados (Featured Trailers)
 - **Data Source**: Se debe combinar la lista de `Próximos Estrenos` y `Cartelera`, filtrando estrictamente las películas que contengan al menos un tráiler en su array `trailers`.
@@ -33,3 +38,12 @@ Las películas en estado `PRE-ESTRENO` se muestran aquí. Existen sub-estados im
   3. Tras seleccionar una película, se habilitan las fechas disponibles.
   4. Tras seleccionar una fecha, se habilitan las horas (funciones) disponibles.
 - **Integración**: Este componente se nutrirá directamente del `showtime-service` (Microservicio de Funciones) cuando esté desarrollado.
+
+## 5. Panel de Administración (Dashboard)
+El panel de administración resume la operatividad del negocio basándose estrictamente en datos calculables y cruzables por el API Gateway desde los microservicios:
+- **Estado del Catálogo (`movie-service`)**: Conteo de películas `CARTELERA`, `PRE-ESTRENO` y películas pendientes de revisión (`INACTIVO`).
+- **Operatividad (`showtime-service`)**: Cantidad de salas con estado `ACTIVA` y funciones de hoy con estado `PROGRAMADA` o `EN_CURSO`.
+- **Ventas y Ocupación (`seat-service` + `showtime-service`)**:
+  - `Entradas Vendidas`: Tickets en estado `SOLD` de funciones del día.
+  - `Compras en Proceso`: Tickets en estado `LOCKED` (Checkout en tiempo real).
+  - `Ingresos Estimados`: Entradas vendidas multiplicadas por el `precio_ticket` de la función asociada.
