@@ -1,9 +1,10 @@
-<div class="min-h-screen flex flex-col" style="background: #060b14;">
+<div class="min-h-screen flex flex-col" style="background: #000;">
 
   <!-- ================= NAVBAR ================= -->
-  <header style="background: rgba(6,11,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 50;">
-    <div style="max-width: 1600px; margin: 0 auto; padding: 0 2rem; height: 68px; display: flex; align-items: center; justify-content: space-between;">
-      <!-- Logo -->
+  <header style="background: rgba(0,0,0,0.9); height: 90px; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 50; display: flex; align-items: center;">
+    <div style="width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;">
+      
+      <!-- Logo (Left) -->
       <div style="display: flex; align-items: center; gap: 10px;">
         <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
@@ -11,176 +12,123 @@
         <span style="font-size: 1.25rem; font-weight: 900; letter-spacing: 0.08em; background: linear-gradient(135deg, #ffffff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CINEMACORE</span>
       </div>
 
-      <!-- Nav links -->
-      <nav style="display: flex; align-items: center; gap: 8px;">
-        @if (!isAuthenticated()) {
-          <a routerLink="/login" style="font-size: 0.875rem; font-weight: 500; color: #94a3b8; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.color='#94a3b8';this.style.background='transparent'">Ingresar</a>
-          <a routerLink="/register" style="font-size: 0.875rem; font-weight: 700; color: #fff; text-decoration: none; padding: 9px 20px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 10px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(220,38,38,0.35);" onmouseover="this.style.boxShadow='0 4px 25px rgba(220,38,38,0.55)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 4px 15px rgba(220,38,38,0.35)';this.style.transform='translateY(0)'">Registrarse</a>
-        } @else {
-          @if (isAdmin()) {
-            <a routerLink="/admin" style="font-size: 0.875rem; font-weight: 600; color: #cbd5e1; text-decoration: none; padding: 9px 18px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">Panel Admin</a>
-          }
-          <button (click)="logout()" style="font-size: 0.875rem; font-weight: 500; color: #64748b; background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">Cerrar Sesión</button>
-        }
+      <!-- Center Links -->
+      <nav style="display: flex; align-items: center; gap: 2.5rem;">
+        <a href="#cartelera" style="font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Cartelera</a>
+        <a href="#pre-estreno" style="font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Próximos Estrenos</a>
       </nav>
+
+      <!-- Right Actions -->
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 1.5rem;">
+          @if (!isAuthenticated()) {
+            <a routerLink="/login" style="font-size: 0.9rem; font-weight: 600; color: #cbd5e1; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">Iniciar Sesión</a>
+            <a routerLink="/register" style="font-size: 0.9rem; font-weight: 600; color: #cbd5e1; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">Registrarse</a>
+          } @else {
+            @if (isAdmin()) {
+              <a routerLink="/admin" style="font-size: 0.9rem; font-weight: 600; color: #cbd5e1; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#cbd5e1'">Admin</a>
+            }
+            <button (click)="logout()" style="font-size: 0.9rem; font-weight: 600; color: #cbd5e1; background: none; border: none; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">Cerrar Sesión</button>
+          }
+        </div>
+        
+        <!-- Icons -->
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <button style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: #cbd5e1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </button>
+          <button style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: #cbd5e1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main style="flex: 1;">
+  <main style="flex: 1; padding-bottom: 80px;">
 
     <!-- ================= HERO BANNER ================= -->
     @if (heroMovies().length > 0) {
-      <section style="position: relative; width: 100%; height: 88vh; min-height: 600px; overflow: hidden;">
+      <section style="position: relative; width: 100%; height: 85vh; min-height: 550px; overflow: hidden; background: #000;">
 
-        <!-- Backdrop con transición de opacidad -->
         @if (currentHeroMovie(); as hero) {
+          <!-- Imagen full background -->
           <div style="position: absolute; inset: 0; transition: opacity 0.8s ease;">
             <img
               [src]="hero.backdrop_path"
               [alt]="hero.titulo"
               style="width: 100%; height: 100%; object-fit: cover; object-position: center top;"
             />
-            <!-- Gradientes -->
-            <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(6,11,20,0.97) 0%, rgba(6,11,20,0.75) 45%, rgba(6,11,20,0.15) 75%, transparent 100%);"></div>
-            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(6,11,20,1) 0%, rgba(6,11,20,0.4) 30%, transparent 65%);"></div>
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);"></div>
           </div>
 
-          <!-- Flecha izquierda -->
-          <button
-            (click)="prevHeroSlide()"
-            style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); z-index: 20; width: 52px; height: 52px; border-radius: 50%; background: rgba(6,11,20,0.6); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(16px);"
-            onmouseover="this.style.background='rgba(220,38,38,0.7)';this.style.borderColor='rgba(220,38,38,0.8)';this.style.transform='translateY(-50%) scale(1.1)'"
-            onmouseout="this.style.background='rgba(6,11,20,0.6)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.transform='translateY(-50%) scale(1)'">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-
-          <!-- Flecha derecha -->
-          <button
-            (click)="nextHeroSlide()"
-            style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); z-index: 20; width: 52px; height: 52px; border-radius: 50%; background: rgba(6,11,20,0.6); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(16px);"
-            onmouseover="this.style.background='rgba(220,38,38,0.7)';this.style.borderColor='rgba(220,38,38,0.8)';this.style.transform='translateY(-50%) scale(1.1)'"
-            onmouseout="this.style.background='rgba(6,11,20,0.6)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.transform='translateY(-50%) scale(1)'">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-
-          <!-- Puntos de navegación centrados abajo -->
-          @if (heroMovies().length > 1) {
-            <div style="position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; align-items: center;">
-              @for (movie of heroMovies(); track movie.id; let i = $index) {
-                <button
-                  (click)="goToHeroSlide(i)"
-                  style="border: none; cursor: pointer; border-radius: 999px; transition: all 0.3s; background: rgba(255,255,255,0.4);"
-                  [style.width]="heroIndex() === i ? '28px' : '8px'"
-                  [style.height]="'8px'"
-                  [style.background]="heroIndex() === i ? '#fff' : 'rgba(255,255,255,0.3)'">
-                </button>
-              }
-            </div>
-          }
-
-          <!-- Layout principal del hero -->
-          <div style="position: relative; z-index: 10; height: 100%; display: flex; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 6rem;">
-
-            <!-- Contenido -->
-            <div style="flex: 1; max-width: 600px;">
-
-              <!-- Badge de estado -->
-              <div style="margin-bottom: 1.25rem;">
-                @if (hero.estado === 'PRE-ESTRENO') {
-                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(220,38,38,0.18); border: 1px solid rgba(220,38,38,0.45); color: #f87171; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; border-radius: 999px;">
-                    <span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
-                    Próximo Estreno
-                  </span>
-                } @else {
-                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; border-radius: 999px;">
-                    <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
-                    En Cartelera
-                  </span>
-                }
-              </div>
-
-              <!-- Título -->
-              <h1 style="font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 900; color: #fff; line-height: 1.05; margin: 0 0 1.25rem 0; text-shadow: 0 4px 32px rgba(0,0,0,0.7); letter-spacing: -0.02em;">
-                {{ hero.titulo }}
-              </h1>
-
-              <!-- Meta info -->
-              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; flex-wrap: wrap;">
-                <span style="padding: 4px 10px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 5px; color: #e2e8f0; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">
-                  {{ hero.restriccion_edad }}
-                </span>
-                @if (hero.fecha_estreno) {
-                  <span style="color: #94a3b8; font-size: 0.9rem;">{{ hero.fecha_estreno | date:'MMMM yyyy' : '' : 'es' }}</span>
-                }
-              </div>
-
-              <!-- Botones -->
-              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <!-- Contenido superpuesto Vue-Style -->
+          <div style="position: relative; z-index: 10; height: 100%; max-width: 1600px; margin: 0 auto; padding: 0 4rem; display: flex; align-items: flex-end; padding-bottom: 4rem;">
+            
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; width: 100%;">
+              <div style="display: flex; align-items: flex-end; gap: 2rem;">
+                <!-- Botón Play Difuminado -->
                 @if (hero.trailers?.length) {
-                  <button
+                  <button 
                     (click)="openTrailer(hero)"
-                    style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #0f172a; font-weight: 800; font-size: 0.95rem; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 30px rgba(0,0,0,0.3);"
-                    onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.45)'"
-                    onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.3)'">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    Ver Tráiler
+                    style="width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.1)';this.style.background='rgba(255,255,255,0.2)'"
+                    onmouseout="this.style.transform='scale(1)';this.style.background='rgba(255,255,255,0.1)'">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="white" style="margin-left: 4px;"><path d="M8 5v14l11-7z"/></svg>
                   </button>
                 }
-                <button
-                  style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 0.95rem; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 12px; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px);"
-                  onmouseover="this.style.background='rgba(255,255,255,0.18)'"
-                  onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  Más Info
-                </button>
+
+                <div style="padding-bottom: 6px;">
+                  <h1 style="font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; text-shadow: 0 4px 20px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 15px; letter-spacing: -0.02em;">
+                    {{ hero.titulo }}
+                    <span style="display: inline-block; padding: 4px 8px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); font-size: 1rem; border-radius: 4px; letter-spacing: normal;">{{ hero.restriccion_edad }}</span>
+                  </h1>
+                  <p style="color: #cbd5e1; font-size: 1.1rem; margin: 8px 0 0 0; font-weight: 600;">
+                    @if (hero.estado === 'PRE-ESTRENO') { Próximamente } @else { Ahora en Cines }
+                  </p>
+                </div>
               </div>
+
+              <!-- CTA BOOK NOW -->
+              <button 
+                style="padding: 16px 45px; background: transparent; border: 2px solid #dc2626; color: #fff; text-transform: uppercase; font-weight: 900; letter-spacing: 0.15em; font-size: 1.05rem; border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s;"
+                onmouseover="this.style.background='rgba(220,38,38,0.2)';this.style.boxShadow='0 0 25px rgba(220,38,38,0.5)'"
+                onmouseout="this.style.background='transparent';this.style.boxShadow='none'">
+                @if (hero.estado === 'PRE-ESTRENO') { COMPRAR PREVENTA } @else { COMPRAR ENTRADAS }
+              </button>
             </div>
           </div>
         }
       </section>
     } @else {
-      <!-- Skeleton del Hero -->
-      <section style="width: 100%; height: 88vh; min-height: 600px; background: linear-gradient(135deg, #0f1729 0%, #060b14 100%); display: flex; align-items: center; justify-content: center;">
-        <div style="text-align: center;">
-          <div style="width: 64px; height: 64px; border: 3px solid rgba(220,38,38,0.4); border-top-color: #dc2626; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;"></div>
-          <p style="color: #475569; font-size: 0.9rem; font-weight: 500;">Cargando películas...</p>
-        </div>
+      <section style="width: 100%; height: 85vh; min-height: 550px; background: #000; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 64px; height: 64px; border: 3px solid rgba(220,38,38,0.4); border-top-color: #dc2626; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
       </section>
     }
 
-
     <!-- ================= CARTELERA ================= -->
-    <section style="padding: 4rem 0 3rem; background: #060b14;">
-      <div style="max-width: 1600px; margin: 0 auto; padding: 0 3rem;">
-        <!-- Cabecera de sección -->
-        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem;">
-          <div>
-            <p style="color: #dc2626; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 6px 2px;">● AHORA EN CINES</p>
-            <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">En Cartelera</h2>
-          </div>
-          <p style="color: #475569; font-size: 0.85rem; margin: 0; padding-bottom: 4px;">{{ cartelera().length }} películas disponibles</p>
+    <section id="cartelera" style="padding: 4rem 0 3rem; background: #000;">
+      <div style="max-width: 1600px; margin: 0 auto; padding: 0 4rem;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: 0.1em; text-transform: uppercase;">EN CARTELERA</h2>
         </div>
 
-        <!-- Skeletons -->
         @if (isLoadingCartelera()) {
-          <div style="display: flex; gap: 20px; overflow: hidden;">
+          <div style="display: flex; gap: 24px; overflow: hidden;">
             @for (item of [1,2,3,4,5]; track item) {
-              <div style="flex-shrink: 0; width: calc((100%) / 5 - 16px);">
-                <div style="aspect-ratio: 2/3; background: rgba(255,255,255,0.05); border-radius: 14px; animation: pulse 1.5s ease-in-out infinite;"></div>
-                <div style="height: 13px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-top: 12px; width: 75%; animation: pulse 1.5s ease-in-out infinite;"></div>
+              <div style="flex-shrink: 0; width: calc((100%) / 5 - 20px);">
+                <div style="aspect-ratio: 2/3; background: rgba(255,255,255,0.05); border-radius: 10px; animation: pulse 1.5s ease-in-out infinite;"></div>
               </div>
             }
           </div>
         } @else {
-          <!-- Scroll horizontal — tarjetas de 285px: caben exactamente 5 antes del scroll -->
-          <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; scrollbar-color: #1e293b transparent;">
+          <div style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none;">
             @for (movie of cartelera(); track movie.id) {
               <div
                 style="flex-shrink: 0; width: 285px; cursor: pointer;"
-                onmouseover="this.querySelector('.poster-overlay').style.opacity='1';this.querySelector('.poster-img').style.transform='scale(1.06)'"
+                onmouseover="this.querySelector('.poster-overlay').style.opacity='1';this.querySelector('.poster-img').style.transform='scale(1.04)'"
                 onmouseout="this.querySelector('.poster-overlay').style.opacity='0';this.querySelector('.poster-img').style.transform='scale(1)'">
-                <!-- Poster -->
-                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); margin-bottom: 12px; background: #0f1729;">
+                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 10px; background: #0f1729;">
                   <img
                     [src]="movie.poster_path"
                     [alt]="movie.titulo"
@@ -188,65 +136,44 @@
                     style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
                     loading="lazy"
                   />
-                  <!-- Badge restricción -->
-                  <div style="position: absolute; top: 10px; left: 10px; padding: 4px 9px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #e2e8f0; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                    {{ movie.restriccion_edad }}
-                  </div>
-                  <!-- Overlay hover -->
-                  <div class="poster-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 50%, transparent 100%); opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 14px 12px;">
-                    <span style="color: #fff; font-size: 0.85rem; font-weight: 700; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ movie.titulo }}</span>
+                  <div class="poster-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center;">
+                     <button style="padding: 10px 20px; border: 2px solid #dc2626; background: transparent; color: #fff; font-weight: 800; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='transparent'">COMPRAR</button>
                   </div>
                 </div>
-                <!-- Título -->
-                <p style="color: #cbd5e1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0;"
-                   [title]="movie.titulo">
-                  {{ movie.titulo }}
-                </p>
+                <div style="margin-top: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                  <h3 style="color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0; flex: 1;">{{ movie.titulo }}</h3>
+                  <span style="display: inline-block; padding: 2px 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 700; color: #cbd5e1; border-radius: 4px;">{{ movie.restriccion_edad }}</span>
+                </div>
               </div>
-            } @empty {
-              <p style="color: #475569; font-size: 0.9rem; padding: 2rem 0;">No hay películas en cartelera.</p>
             }
           </div>
         }
       </div>
     </section>
 
-
     <!-- ================= PRE-ESTRENO ================= -->
-    <section style="padding: 3rem 0 4rem; background: rgba(255,255,255,0.015); border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04);">
-      <div style="max-width: 1600px; margin: 0 auto; padding: 0 3rem;">
-        <!-- Cabecera -->
-        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="display: inline-block; width: 6px; height: 6px; background: #dc2626; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
-              <p style="color: #dc2626; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; margin: 0;">PREVENTA ABIERTA</p>
-            </div>
-            <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Próximos Estrenos</h2>
-          </div>
-          <p style="color: #475569; font-size: 0.85rem; margin: 0; padding-bottom: 4px;">Asegura tu entrada hoy</p>
+    <section id="pre-estreno" style="padding: 3rem 0 4rem; background: #000; border-top: 1px solid rgba(255,255,255,0.05);">
+      <div style="max-width: 1600px; margin: 0 auto; padding: 0 4rem;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: 0.1em; text-transform: uppercase;">PRÓXIMOS ESTRENOS</h2>
         </div>
 
-        <!-- Skeletons -->
         @if (isLoadingPreEstrenos()) {
-          <div style="display: flex; gap: 20px; overflow: hidden;">
+          <div style="display: flex; gap: 24px; overflow: hidden;">
             @for (item of [1,2,3,4,5]; track item) {
-              <div style="flex-shrink: 0; width: calc((100%) / 5 - 16px);">
-                <div style="aspect-ratio: 2/3; background: rgba(220,38,38,0.06); border-radius: 14px; animation: pulse 1.5s ease-in-out infinite;"></div>
-                <div style="height: 13px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-top: 12px; width: 75%; animation: pulse 1.5s ease-in-out infinite;"></div>
+              <div style="flex-shrink: 0; width: calc((100%) / 5 - 20px);">
+                <div style="aspect-ratio: 2/3; background: rgba(220,38,38,0.05); border-radius: 10px; animation: pulse 1.5s ease-in-out infinite;"></div>
               </div>
             }
           </div>
         } @else {
-          <!-- Scroll horizontal -->
-          <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; scrollbar-color: #1e293b transparent;">
+          <div style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none;">
             @for (movie of preEstrenos(); track movie.id) {
               <div
                 style="flex-shrink: 0; width: 285px; cursor: pointer;"
-                onmouseover="this.querySelector('.pre-overlay').style.opacity='1';this.querySelector('.pre-img').style.transform='scale(1.06)'"
+                onmouseover="this.querySelector('.pre-overlay').style.opacity='1';this.querySelector('.pre-img').style.transform='scale(1.04)'"
                 onmouseout="this.querySelector('.pre-overlay').style.opacity='0';this.querySelector('.pre-img').style.transform='scale(1)'">
-                <!-- Poster -->
-                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); margin-bottom: 12px; background: #0f1729; border: 1.5px solid rgba(220,38,38,0.25);">
+                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 10px; background: #0f1729;">
                   <img
                     [src]="movie.poster_path"
                     [alt]="movie.titulo"
@@ -254,62 +181,167 @@
                     style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
                     loading="lazy"
                   />
-                  <!-- Badge restricción -->
-                  <div style="position: absolute; top: 10px; left: 10px; padding: 4px 9px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #e2e8f0; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                    {{ movie.restriccion_edad }}
-                  </div>
-                  <!-- Badge preventa -->
-                  <div style="position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; background: rgba(220,38,38,0.9); border-radius: 6px; color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;">
-                    PREVENTA
-                  </div>
-                  <!-- Overlay hover con play -->
-                  <div class="pre-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; backdrop-filter: blur(2px);">
-                    @if (movie.trailers?.length) {
-                      <div (click)="openTrailer(movie)" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.65); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style="margin-left: 2px;"><path d="M8 5v14l11-7z"/></svg>
-                      </div>
-                    }
+                  <div class="pre-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.75); opacity: 0; transition: opacity 0.3s; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+                     <button style="width: 160px; padding: 10px 20px; background: #dc2626; border: 2px solid #dc2626; color: #fff; font-weight: 800; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; transition: background 0.2s;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">PREVENTA</button>
+                     @if (movie.trailers?.length) {
+                       <button (click)="openTrailer(movie)" style="width: 160px; padding: 10px 20px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.5); color: #fff; font-weight: 800; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)';this.style.borderColor='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='rgba(255,255,255,0.5)'">VER TRÁILER</button>
+                     }
                   </div>
                 </div>
-                <!-- Título -->
-                <p style="color: #cbd5e1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0 0 5px 0;"
-                   [title]="movie.titulo">
-                  {{ movie.titulo }}
-                </p>
-                @if (movie.fecha_estreno) {
-                  <p style="color: #475569; font-size: 0.75rem; margin: 0;">{{ movie.fecha_estreno | date:'dd MMM yyyy' : '' : 'es' }}</p>
-                }
+                <div style="margin-top: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                  <h3 style="color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0; flex: 1;">{{ movie.titulo }}</h3>
+                  <span style="display: inline-block; padding: 2px 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 700; color: #cbd5e1; border-radius: 4px;">{{ movie.restriccion_edad }}</span>
+                </div>
               </div>
-            } @empty {
-              <p style="color: #475569; font-size: 0.9rem; padding: 2rem 0;">No hay próximos estrenos disponibles.</p>
             }
           </div>
         }
       </div>
     </section>
 
+    <!-- ================= FEATURED TRAILERS ================= -->
+    <section style="padding: 3rem 0 5rem; background: #000; border-top: 1px solid rgba(255,255,255,0.05);">
+      <div style="max-width: 1600px; margin: 0 auto; padding: 0 4rem;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 2.5rem;">
+          <div style="width: 46px; height: 3px; background: linear-gradient(90deg, #dc2626, #f59e0b);"></div>
+          <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: 0.1em; text-transform: uppercase;">TRÁILERS DESTACADOS</h2>
+        </div>
+
+        <div style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: thin; scrollbar-color: #333 #000;">
+          @for (movie of featuredTrailers(); track movie.id) {
+            @if (movie.trailers?.length) {
+              <div 
+                style="flex-shrink: 0; width: 320px; cursor: pointer;"
+                (click)="openTrailer(movie)"
+                onmouseover="this.querySelector('.trailer-img').style.transform='scale(1.05)';this.querySelector('.play-btn').style.background='rgba(220,38,38,0.9)';this.querySelector('.play-btn').style.borderColor='rgba(220,38,38,0.9)'"
+                onmouseout="this.querySelector('.trailer-img').style.transform='scale(1)';this.querySelector('.play-btn').style.background='rgba(0,0,0,0.5)';this.querySelector('.play-btn').style.borderColor='rgba(255,255,255,0.7)'">
+                
+                <!-- Thumbnail 16:9 -->
+                <div style="position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 10px; background: #111; margin-bottom: 16px;">
+                  <img 
+                    [src]="getYoutubeThumbnail(movie.trailers[0])" 
+                    [alt]="movie.titulo"
+                    class="trailer-img"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+                  />
+                  <!-- Botón Play Overlay -->
+                  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                    <div class="play-btn" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.3s;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="white" style="margin-left: 3px;"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Detalles -->
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <h3 style="color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0; flex: 1; line-height: 1.3;">{{ movie.titulo }}</h3>
+                  <span style="display: inline-block; padding: 2px 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 700; color: #cbd5e1; border-radius: 4px;">{{ movie.restriccion_edad }}</span>
+                </div>
+                <p style="color: #64748b; font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 600;">Tráiler Oficial</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Footer mínimo -->
-  <footer style="padding: 1.5rem 3rem; border-top: 1px solid rgba(255,255,255,0.04); background: #060b14;">
-    <p style="color: #1e293b; font-size: 0.75rem; text-align: center; margin: 0;">© 2026 CinemaCore. Todos los derechos reservados.</p>
-  </footer>
+  <!-- ================= QUICK BOOK STICKY FOOTER ================= -->
+  <aside style="position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 100; display: flex; align-items: center;">
+    
+    <!-- Decoración dorada/amarilla estilo Vue -->
+    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 400px; background: linear-gradient(112deg, #f59e0b 20%, transparent 100%); opacity: 0.2; pointer-events: none;"></div>
 
+    <div style="max-width: 1600px; width: 100%; margin: 0 auto; padding: 0 4rem; display: flex; align-items: center; gap: 4rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 900; color: #000; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; flex-shrink: 0; z-index: 1;">COMPRA<br/>RÁPIDA</h3>
+
+      <div style="display: flex; flex: 1; gap: 20px; position: relative; z-index: 1;">
+        
+        <!-- Película -->
+        <div style="flex: 1; position: relative;">
+          <button 
+            (click)="toggleQuickBookTab('pelicula')"
+            style="width: 100%; background: none; border: none; border-bottom: 2px solid #e2e8f0; text-align: left; padding: 5px 0; cursor: pointer;">
+            <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">PELÍCULA</span>
+            <span style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 700; color: #0f172a;">
+              Selecciona una película
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </button>
+          <!-- POPUP -->
+          @if (activeQuickBookTab() === 'pelicula') {
+            <div style="position: absolute; bottom: calc(100% + 20px); left: 0; width: 350px; background: #fff; box-shadow: 0 -4px 25px rgba(0,0,0,0.15); border-radius: 8px; padding: 20px; z-index: 101; border: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">Elige Película</h4>
+                <button (click)="closeQuickBook()" style="background: none; border: none; cursor: pointer; color: #64748b;">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 500;">(Integración pendiente con Microservicio de Funciones)</p>
+            </div>
+          }
+        </div>
+
+        <!-- Fecha -->
+        <div style="flex: 1; position: relative;">
+          <button 
+            (click)="toggleQuickBookTab('fecha')"
+            style="width: 100%; background: none; border: none; border-bottom: 2px solid #e2e8f0; text-align: left; padding: 5px 0; cursor: pointer;">
+            <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">FECHA</span>
+            <span style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 700; color: #0f172a;">
+              Selecciona fecha
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </button>
+          <!-- POPUP -->
+          @if (activeQuickBookTab() === 'fecha') {
+            <div style="position: absolute; bottom: calc(100% + 20px); left: 0; width: 350px; background: #fff; box-shadow: 0 -4px 25px rgba(0,0,0,0.15); border-radius: 8px; padding: 20px; z-index: 101; border: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">Elige Fecha</h4>
+                <button (click)="closeQuickBook()" style="background: none; border: none; cursor: pointer; color: #64748b;">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 500;">(Fechas se cargarán según película seleccionada)</p>
+            </div>
+          }
+        </div>
+
+        <!-- Hora -->
+        <div style="flex: 1; position: relative;">
+          <button 
+            (click)="toggleQuickBookTab('hora')"
+            style="width: 100%; background: none; border: none; border-bottom: 2px solid #e2e8f0; text-align: left; padding: 5px 0; cursor: pointer; opacity: 0.5;">
+            <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; letter-spacing: 0.05em; margin-bottom: 2px;">HORA</span>
+            <span style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 700; color: #0f172a;">
+              Elige hora
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Action Button -->
+      <button style="padding: 14px 40px; background: #cbd5e1; color: #fff; border: none; border-radius: 4px; font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: not-allowed; z-index: 1;">
+        BUSCAR
+      </button>
+
+    </div>
+  </aside>
 
   <!-- ================= MODAL TRAILER ================= -->
   @if (isModalOpen()) {
     <div
       style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1.5rem;"
       (click)="closeTrailer()">
-      <!-- Backdrop -->
       <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);"></div>
 
-      <!-- Contenido -->
       <div
         style="position: relative; z-index: 10; width: 100%; max-width: 900px; aspect-ratio: 16/9; border-radius: 18px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.08);"
         (click)="$event.stopPropagation()">
-
-        <!-- Botón cerrar -->
+        
         <button
           (click)="closeTrailer()"
           style="position: absolute; top: 14px; right: 14px; z-index: 10; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"

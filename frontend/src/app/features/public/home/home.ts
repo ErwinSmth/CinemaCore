@@ -51,6 +51,16 @@ export class Home implements OnInit, OnDestroy {
   trailerUrl = signal<SafeResourceUrl | null>(null);
   isModalOpen = signal<boolean>(false);
 
+  // Computed state for Featured Trailers (prioritize pre-estrenos, then cartelera)
+  featuredTrailers = computed(() => {
+    const pre = this.preEstrenos().filter(m => m.trailers && m.trailers.length > 0);
+    const cart = this.cartelera().filter(m => m.trailers && m.trailers.length > 0);
+    return [...pre, ...cart].slice(0, 10); // Show up to 10 trailers
+  });
+
+  // Quick Book state
+  activeQuickBookTab = signal<'pelicula' | 'fecha' | 'hora' | null>(null);
+
   ngOnInit() {
     if (this.cartelera().length === 0) {
       this.movieService.fetchCartelera().subscribe({
@@ -125,7 +135,26 @@ export class Home implements OnInit, OnDestroy {
 
   closeTrailer() {
     this.isModalOpen.set(false);
-    this.trailerUrl.set(null);
+    setTimeout(() => this.trailerUrl.set(null), 300);
+  }
+
+  getYoutubeThumbnail(url: string): string {
+    if (!url) return '';
+    const match = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?]+)/);
+    const videoId = match ? match[1] : null;
+    return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
+  }
+
+  toggleQuickBookTab(tab: 'pelicula' | 'fecha' | 'hora') {
+    if (this.activeQuickBookTab() === tab) {
+      this.activeQuickBookTab.set(null);
+    } else {
+      this.activeQuickBookTab.set(tab);
+    }
+  }
+
+  closeQuickBook() {
+    this.activeQuickBookTab.set(null);
   }
 
   private extractYoutubeId(url: string): string | null {
