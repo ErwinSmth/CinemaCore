@@ -14,5 +14,7 @@ public class CacheWarmingService {
     @EventListener(ApplicationReadyEvent.class)
     public void warmUpCache() {
         movieService.getCartelera(null, null);
+        movieService.getPreEstrenos(null, null);
     }
 }
+

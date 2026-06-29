@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/movies").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/movies/pre-estreno").permitAll()
                         .requestMatchers(HttpMethod.GET, "/movies/{id:[\\d]+}").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

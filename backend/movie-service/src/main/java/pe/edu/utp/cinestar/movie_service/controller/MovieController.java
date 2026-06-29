@@ -65,4 +65,11 @@ public class MovieController {
             @RequestParam(value = "search", required = false) String search) {
         return ResponseEntity.ok(movieService.getCartelera(genre, search));
     }
+
+    @GetMapping("/pre-estreno")
+    public ResponseEntity<List<MovieCarteleraResponse>> getPreEstrenos(
+            @RequestParam(value = "genre", required = false) String genre,
+            @RequestParam(value = "search", required = false) String search) {
+        return ResponseEntity.ok(movieService.getPreEstrenos(genre, search));
+    }
 }

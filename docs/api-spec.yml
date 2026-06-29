@@ -26,10 +26,19 @@ components:
           type: string
         poster_path:
           type: string
+        backdrop_path:
+          type: string
         estado:
           type: string
         restriccion_edad:
           type: string
+        fecha_estreno:
+          type: string
+          format: date
+        trailers:
+          type: array
+          items:
+            type: string
     MovieDetailResponse:
       type: object
       properties:
@@ -295,6 +304,30 @@ paths:
       responses:
         '200':
           description: Películas activas en cartelera (Fuerza status=CARTELERA)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovieCarteleraResponse'
+
+  /movies/pre-estreno:
+    get:
+      summary: (Público) Ver próximos estrenos en preventa
+      operationId: getPreEstrenos
+      tags: [Movies]
+      parameters:
+        - name: genre
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Películas en estado PRE-ESTRENO
           content:
             application/json:
               schema:

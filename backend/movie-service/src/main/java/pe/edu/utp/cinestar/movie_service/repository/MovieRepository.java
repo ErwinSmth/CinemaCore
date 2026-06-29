@@ -24,4 +24,12 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
            "AND (CAST(:genreJson AS TEXT) IS NULL OR metadata @> CAST(CAST(:genreJson AS TEXT) AS jsonb))",
            nativeQuery = true)
     List<Movie> findCartelera(@Param("search") String search, @Param("genreJson") String genreJson);
+
+    @Query(value = "SELECT * FROM peliculas WHERE estado = 'PRE-ESTRENO' " +
+           "AND (CAST(:search AS TEXT) IS NULL OR titulo ILIKE CAST(:search AS TEXT)) " +
+           "AND (CAST(:genreJson AS TEXT) IS NULL OR metadata @> CAST(CAST(:genreJson AS TEXT) AS jsonb)) " +
+           "ORDER BY fecha_estreno DESC",
+           nativeQuery = true)
+    List<Movie> findPreEstrenos(@Param("search") String search, @Param("genreJson") String genreJson);
 }
+

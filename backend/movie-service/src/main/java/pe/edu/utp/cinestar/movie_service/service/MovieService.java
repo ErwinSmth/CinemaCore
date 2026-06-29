@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.utp.cinestar.movie_service.exception.MovieNotFoundException;
@@ -43,7 +44,10 @@ public class MovieService {
     }
 
     @Transactional
-    @CacheEvict(value = "cartelera", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cartelera", allEntries = true),
+        @CacheEvict(value = "preestreno", allEntries = true)
+    })
     public Long importMovie(Integer tmdbId) {
         JsonNode tmdbData;
         try {
@@ -147,7 +151,10 @@ public class MovieService {
     }
 
     @Transactional
-    @CacheEvict(value = "cartelera", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cartelera", allEntries = true),
+        @CacheEvict(value = "preestreno", allEntries = true)
+    })
     public Movie updateMovie(Long id, UpdateMovieRequest req) {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new MovieNotFoundException("Película no encontrada con ID: " + id));
@@ -164,7 +171,10 @@ public class MovieService {
     }
 
     @Transactional
-    @CacheEvict(value = "cartelera", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cartelera", allEntries = true),
+        @CacheEvict(value = "preestreno", allEntries = true)
+    })
     public void deleteMovie(Long id) {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new MovieNotFoundException("Película no encontrada con ID: " + id));
@@ -174,29 +184,46 @@ public class MovieService {
 
     @Cacheable(value = "cartelera")
     public List<MovieCarteleraResponse> getCartelera(String genre, String search) {
-        // Construir el fragmento JSON para el filtro GIN de género
         String genreJson = null;
         if (genre != null && !genre.isBlank()) {
             genreJson = "{\"generos\": [\"" + genre + "\"]}";
         }
-
-        // Formatear búsqueda para usar ILIKE directamente
         String searchQuery = (search != null && !search.isBlank()) ? "%" + search + "%" : null;
-
-        // Corrección: los @Param del repositorio son (search, genreJson) en ese orden
         List<Movie> cartelera = movieRepository.findCartelera(searchQuery, genreJson);
+        return cartelera.stream().map(this::toCarteleraResponse).collect(Collectors.toList());
+    }
 
-        return cartelera.stream().map(m -> {
-            MovieCarteleraResponse dto = new MovieCarteleraResponse();
-            dto.setId(m.getId());
-            dto.setTitulo(m.getTitulo());
-            if (m.getMetadata() != null && m.getMetadata().has("posterPath")) {
+    @Cacheable(value = "preestreno")
+    public List<MovieCarteleraResponse> getPreEstrenos(String genre, String search) {
+        String genreJson = null;
+        if (genre != null && !genre.isBlank()) {
+            genreJson = "{\"generos\": [\"" + genre + "\"]}";
+        }
+        String searchQuery = (search != null && !search.isBlank()) ? "%" + search + "%" : null;
+        List<Movie> preEstrenos = movieRepository.findPreEstrenos(searchQuery, genreJson);
+        return preEstrenos.stream().map(this::toCarteleraResponse).collect(Collectors.toList());
+    }
+
+    private MovieCarteleraResponse toCarteleraResponse(Movie m) {
+        MovieCarteleraResponse dto = new MovieCarteleraResponse();
+        dto.setId(m.getId());
+        dto.setTitulo(m.getTitulo());
+        dto.setEstado(m.getEstado());
+        dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
+        if (m.getMetadata() != null) {
+            if (m.getMetadata().has("posterPath"))
                 dto.setPosterPath(m.getMetadata().get("posterPath").asText());
+            if (m.getMetadata().has("backdropPath"))
+                dto.setBackdropPath(m.getMetadata().get("backdropPath").asText());
+            if (m.getMetadata().has("trailers") && m.getMetadata().get("trailers").isArray()) {
+                List<String> trailers = new ArrayList<>();
+                m.getMetadata().get("trailers").forEach(t -> trailers.add(t.asText()));
+                dto.setTrailers(trailers);
             }
-            dto.setEstado(m.getEstado());
-            dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
-            return dto;
-        }).collect(Collectors.toList());
+        }
+        if (m.getFechaEstreno() != null)
+            dto.setFechaEstreno(m.getFechaEstreno());
+        return dto;
     }
 
     private MovieDetailResponse toDetailResponse(Movie m) {

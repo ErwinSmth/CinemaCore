@@ -67,7 +67,7 @@ app.use('/api/v1/auth', authLimiter, authRoutes);
 // Movie Service: Proxy con validación selectiva en el API Gateway
 app.use('/api/v1/movies', (req: Request, res: Response, next: NextFunction) => {
   // Rutas publicas de peliculas (Cartelera es '/' en el servicio, y detalle es '/:id')
-  const isPublicRoute = req.method === 'GET' && (req.path === '/' || req.path === '' || req.path === '/cartelera' || /^\/\d+$/.test(req.path));
+  const isPublicRoute = req.method === 'GET' && (req.path === '/' || req.path === '' || req.path === '/pre-estreno' || /^\/\d+$/.test(req.path));
   
   if (isPublicRoute) {
     return next();

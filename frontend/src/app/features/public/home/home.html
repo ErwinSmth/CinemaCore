@@ -1,98 +1,333 @@
-<div class="min-h-screen flex flex-col">
-  <!-- Navbar -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl font-bold text-red-600 tracking-wider">CINEMACORE</span>
+<div class="min-h-screen flex flex-col" style="background: #060b14;">
+
+  <!-- ================= NAVBAR ================= -->
+  <header style="background: rgba(6,11,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1600px; margin: 0 auto; padding: 0 2rem; height: 68px; display: flex; align-items: center; justify-content: space-between;">
+      <!-- Logo -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
+        </div>
+        <span style="font-size: 1.25rem; font-weight: 900; letter-spacing: 0.08em; background: linear-gradient(135deg, #ffffff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CINEMACORE</span>
       </div>
-      
-      <nav class="flex items-center gap-4">
+
+      <!-- Nav links -->
+      <nav style="display: flex; align-items: center; gap: 8px;">
         @if (!isAuthenticated()) {
-          <a routerLink="/login" class="text-sm font-medium text-slate-300 hover:text-white transition">Ingresar</a>
-          <a routerLink="/register" class="text-sm font-medium bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">Registrarse</a>
+          <a routerLink="/login" style="font-size: 0.875rem; font-weight: 500; color: #94a3b8; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.color='#94a3b8';this.style.background='transparent'">Ingresar</a>
+          <a routerLink="/register" style="font-size: 0.875rem; font-weight: 700; color: #fff; text-decoration: none; padding: 9px 20px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 10px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(220,38,38,0.35);" onmouseover="this.style.boxShadow='0 4px 25px rgba(220,38,38,0.55)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 4px 15px rgba(220,38,38,0.35)';this.style.transform='translateY(0)'">Registrarse</a>
         } @else {
           @if (isAdmin()) {
-            <a routerLink="/admin" class="text-sm font-medium bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded transition border border-slate-600">Panel Admin</a>
+            <a routerLink="/admin" style="font-size: 0.875rem; font-weight: 600; color: #cbd5e1; text-decoration: none; padding: 9px 18px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">Panel Admin</a>
           }
-          <button (click)="logout()" class="text-sm font-medium text-slate-400 hover:text-red-500 transition">Cerrar Sesión</button>
+          <button (click)="logout()" style="font-size: 0.875rem; font-weight: 500; color: #64748b; background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">Cerrar Sesión</button>
         }
       </nav>
     </div>
   </header>
 
-  <!-- Hero / Cartelera Skeleton -->
-  <main class="flex-1 bg-slate-900">
-    <!-- Hero Banner -->
-    <section class="relative h-[60vh] bg-slate-800 flex items-center justify-center border-b border-slate-800">
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
-      <div class="relative z-10 text-center space-y-4">
-        <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">VIVE LA MAGIA DEL CINE</h1>
-        <p class="text-xl text-slate-400">Descubre los próximos estrenos y reserva tus asientos hoy.</p>
-      </div>
-    </section>
+  <main style="flex: 1;">
 
-    <!-- Movies Grid -->
-    <section class="container mx-auto px-4 py-16">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-bold text-white">Cartelera Actual</h2>
-        <span class="text-sm text-slate-500 uppercase tracking-widest font-medium">Películas en Estreno</span>
-      </div>
+    <!-- ================= HERO BANNER ================= -->
+    @if (heroMovies().length > 0) {
+      <section style="position: relative; width: 100%; height: 88vh; min-height: 600px; overflow: hidden;">
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        @if (isLoading()) {
-          <!-- Skeleton Cards -->
-          @for (item of [1,2,3,4]; track item) {
-            <div class="space-y-4">
-              <div class="aspect-[2/3] bg-slate-800 rounded animate-pulse"></div>
-              <div class="space-y-2">
-                <div class="h-4 bg-slate-800 rounded w-3/4 animate-pulse"></div>
-                <div class="h-3 bg-slate-800 rounded w-1/2 animate-pulse"></div>
-              </div>
-              <div class="h-10 bg-slate-800 rounded w-full animate-pulse mt-2"></div>
+        <!-- Backdrop con transición de opacidad -->
+        @if (currentHeroMovie(); as hero) {
+          <div style="position: absolute; inset: 0; transition: opacity 0.8s ease;">
+            <img
+              [src]="hero.backdrop_path"
+              [alt]="hero.titulo"
+              style="width: 100%; height: 100%; object-fit: cover; object-position: center top;"
+            />
+            <!-- Gradientes -->
+            <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(6,11,20,0.97) 0%, rgba(6,11,20,0.75) 45%, rgba(6,11,20,0.15) 75%, transparent 100%);"></div>
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(6,11,20,1) 0%, rgba(6,11,20,0.4) 30%, transparent 65%);"></div>
+          </div>
+
+          <!-- Flecha izquierda -->
+          <button
+            (click)="prevHeroSlide()"
+            style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); z-index: 20; width: 52px; height: 52px; border-radius: 50%; background: rgba(6,11,20,0.6); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(16px);"
+            onmouseover="this.style.background='rgba(220,38,38,0.7)';this.style.borderColor='rgba(220,38,38,0.8)';this.style.transform='translateY(-50%) scale(1.1)'"
+            onmouseout="this.style.background='rgba(6,11,20,0.6)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.transform='translateY(-50%) scale(1)'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+
+          <!-- Flecha derecha -->
+          <button
+            (click)="nextHeroSlide()"
+            style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); z-index: 20; width: 52px; height: 52px; border-radius: 50%; background: rgba(6,11,20,0.6); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(16px);"
+            onmouseover="this.style.background='rgba(220,38,38,0.7)';this.style.borderColor='rgba(220,38,38,0.8)';this.style.transform='translateY(-50%) scale(1.1)'"
+            onmouseout="this.style.background='rgba(6,11,20,0.6)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.transform='translateY(-50%) scale(1)'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Puntos de navegación centrados abajo -->
+          @if (heroMovies().length > 1) {
+            <div style="position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; align-items: center;">
+              @for (movie of heroMovies(); track movie.id; let i = $index) {
+                <button
+                  (click)="goToHeroSlide(i)"
+                  style="border: none; cursor: pointer; border-radius: 999px; transition: all 0.3s; background: rgba(255,255,255,0.4);"
+                  [style.width]="heroIndex() === i ? '28px' : '8px'"
+                  [style.height]="'8px'"
+                  [style.background]="heroIndex() === i ? '#fff' : 'rgba(255,255,255,0.3)'">
+                </button>
+              }
             </div>
           }
-        } @else {
-          <!-- Real Movies -->
-          @for (movie of movies(); track movie.id) {
-            <div class="group relative flex flex-col space-y-3 cursor-pointer overflow-hidden rounded-xl bg-slate-800/50 p-3 hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-700 shadow-lg">
-              
-              <!-- Poster Container -->
-              <div class="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md">
-                <img [src]="movie.poster_path" [alt]="movie.titulo" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                
-                <!-- Age Restriction Badge -->
-                <div class="absolute top-2 left-2 px-2 py-1 bg-black/70 backdrop-blur-md rounded text-xs font-bold text-white uppercase border border-slate-700">
-                  {{ movie.restriccion_edad }}
-                </div>
-                
-                <!-- Status Badge (Optional, since we might have PRE-ESTRENO) -->
-                @if (movie.estado === 'PRE-ESTRENO') {
-                  <div class="absolute bottom-2 right-2 px-2 py-1 bg-red-600/90 rounded text-xs font-bold text-white shadow">
-                    PREVENTA
-                  </div>
+
+          <!-- Layout principal del hero -->
+          <div style="position: relative; z-index: 10; height: 100%; display: flex; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 6rem;">
+
+            <!-- Contenido -->
+            <div style="flex: 1; max-width: 600px;">
+
+              <!-- Badge de estado -->
+              <div style="margin-bottom: 1.25rem;">
+                @if (hero.estado === 'PRE-ESTRENO') {
+                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(220,38,38,0.18); border: 1px solid rgba(220,38,38,0.45); color: #f87171; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; border-radius: 999px;">
+                    <span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                    Próximo Estreno
+                  </span>
+                } @else {
+                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; border-radius: 999px;">
+                    <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+                    En Cartelera
+                  </span>
                 }
               </div>
 
-              <!-- Movie Info -->
-              <div class="flex flex-col flex-1 px-1">
-                <h3 class="text-lg font-bold text-white line-clamp-1 group-hover:text-red-500 transition-colors" [title]="movie.titulo">
-                  {{ movie.titulo }}
-                </h3>
+              <!-- Título -->
+              <h1 style="font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 900; color: #fff; line-height: 1.05; margin: 0 0 1.25rem 0; text-shadow: 0 4px 32px rgba(0,0,0,0.7); letter-spacing: -0.02em;">
+                {{ hero.titulo }}
+              </h1>
+
+              <!-- Meta info -->
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; flex-wrap: wrap;">
+                <span style="padding: 4px 10px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 5px; color: #e2e8f0; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">
+                  {{ hero.restriccion_edad }}
+                </span>
+                @if (hero.fecha_estreno) {
+                  <span style="color: #94a3b8; font-size: 0.9rem;">{{ hero.fecha_estreno | date:'MMMM yyyy' : '' : 'es' }}</span>
+                }
               </div>
 
-              <!-- Action Button -->
-              <button class="w-full bg-slate-700 hover:bg-red-600 text-white font-medium py-2 rounded transition-colors duration-200">
-                Ver Detalles
-              </button>
+              <!-- Botones -->
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                @if (hero.trailers?.length) {
+                  <button
+                    (click)="openTrailer(hero)"
+                    style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #0f172a; font-weight: 800; font-size: 0.95rem; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 30px rgba(0,0,0,0.3);"
+                    onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.45)'"
+                    onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.3)'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    Ver Tráiler
+                  </button>
+                }
+                <button
+                  style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 0.95rem; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 12px; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.18)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Más Info
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </section>
+    } @else {
+      <!-- Skeleton del Hero -->
+      <section style="width: 100%; height: 88vh; min-height: 600px; background: linear-gradient(135deg, #0f1729 0%, #060b14 100%); display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center;">
+          <div style="width: 64px; height: 64px; border: 3px solid rgba(220,38,38,0.4); border-top-color: #dc2626; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;"></div>
+          <p style="color: #475569; font-size: 0.9rem; font-weight: 500;">Cargando películas...</p>
+        </div>
+      </section>
+    }
 
-            </div>
-          } @empty {
-            <div class="col-span-full py-12 text-center text-slate-400 bg-slate-800/30 rounded-xl border border-slate-800">
-              <p class="text-lg">No hay películas en cartelera en este momento.</p>
-            </div>
-          }
+
+    <!-- ================= CARTELERA ================= -->
+    <section style="padding: 4rem 0 3rem; background: #060b14;">
+      <div style="max-width: 1600px; margin: 0 auto; padding: 0 3rem;">
+        <!-- Cabecera de sección -->
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem;">
+          <div>
+            <p style="color: #dc2626; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 6px 2px;">● AHORA EN CINES</p>
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">En Cartelera</h2>
+          </div>
+          <p style="color: #475569; font-size: 0.85rem; margin: 0; padding-bottom: 4px;">{{ cartelera().length }} películas disponibles</p>
+        </div>
+
+        <!-- Skeletons -->
+        @if (isLoadingCartelera()) {
+          <div style="display: flex; gap: 20px; overflow: hidden;">
+            @for (item of [1,2,3,4,5]; track item) {
+              <div style="flex-shrink: 0; width: calc((100%) / 5 - 16px);">
+                <div style="aspect-ratio: 2/3; background: rgba(255,255,255,0.05); border-radius: 14px; animation: pulse 1.5s ease-in-out infinite;"></div>
+                <div style="height: 13px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-top: 12px; width: 75%; animation: pulse 1.5s ease-in-out infinite;"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Scroll horizontal — tarjetas de 285px: caben exactamente 5 antes del scroll -->
+          <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; scrollbar-color: #1e293b transparent;">
+            @for (movie of cartelera(); track movie.id) {
+              <div
+                style="flex-shrink: 0; width: 285px; cursor: pointer;"
+                onmouseover="this.querySelector('.poster-overlay').style.opacity='1';this.querySelector('.poster-img').style.transform='scale(1.06)'"
+                onmouseout="this.querySelector('.poster-overlay').style.opacity='0';this.querySelector('.poster-img').style.transform='scale(1)'">
+                <!-- Poster -->
+                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); margin-bottom: 12px; background: #0f1729;">
+                  <img
+                    [src]="movie.poster_path"
+                    [alt]="movie.titulo"
+                    class="poster-img"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                    loading="lazy"
+                  />
+                  <!-- Badge restricción -->
+                  <div style="position: absolute; top: 10px; left: 10px; padding: 4px 9px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #e2e8f0; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                    {{ movie.restriccion_edad }}
+                  </div>
+                  <!-- Overlay hover -->
+                  <div class="poster-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 50%, transparent 100%); opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 14px 12px;">
+                    <span style="color: #fff; font-size: 0.85rem; font-weight: 700; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ movie.titulo }}</span>
+                  </div>
+                </div>
+                <!-- Título -->
+                <p style="color: #cbd5e1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0;"
+                   [title]="movie.titulo">
+                  {{ movie.titulo }}
+                </p>
+              </div>
+            } @empty {
+              <p style="color: #475569; font-size: 0.9rem; padding: 2rem 0;">No hay películas en cartelera.</p>
+            }
+          </div>
         }
       </div>
     </section>
+
+
+    <!-- ================= PRE-ESTRENO ================= -->
+    <section style="padding: 3rem 0 4rem; background: rgba(255,255,255,0.015); border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04);">
+      <div style="max-width: 1600px; margin: 0 auto; padding: 0 3rem;">
+        <!-- Cabecera -->
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="display: inline-block; width: 6px; height: 6px; background: #dc2626; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+              <p style="color: #dc2626; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; margin: 0;">PREVENTA ABIERTA</p>
+            </div>
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Próximos Estrenos</h2>
+          </div>
+          <p style="color: #475569; font-size: 0.85rem; margin: 0; padding-bottom: 4px;">Asegura tu entrada hoy</p>
+        </div>
+
+        <!-- Skeletons -->
+        @if (isLoadingPreEstrenos()) {
+          <div style="display: flex; gap: 20px; overflow: hidden;">
+            @for (item of [1,2,3,4,5]; track item) {
+              <div style="flex-shrink: 0; width: calc((100%) / 5 - 16px);">
+                <div style="aspect-ratio: 2/3; background: rgba(220,38,38,0.06); border-radius: 14px; animation: pulse 1.5s ease-in-out infinite;"></div>
+                <div style="height: 13px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-top: 12px; width: 75%; animation: pulse 1.5s ease-in-out infinite;"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Scroll horizontal -->
+          <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; scrollbar-color: #1e293b transparent;">
+            @for (movie of preEstrenos(); track movie.id) {
+              <div
+                style="flex-shrink: 0; width: 285px; cursor: pointer;"
+                onmouseover="this.querySelector('.pre-overlay').style.opacity='1';this.querySelector('.pre-img').style.transform='scale(1.06)'"
+                onmouseout="this.querySelector('.pre-overlay').style.opacity='0';this.querySelector('.pre-img').style.transform='scale(1)'">
+                <!-- Poster -->
+                <div style="position: relative; aspect-ratio: 2/3; overflow: hidden; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); margin-bottom: 12px; background: #0f1729; border: 1.5px solid rgba(220,38,38,0.25);">
+                  <img
+                    [src]="movie.poster_path"
+                    [alt]="movie.titulo"
+                    class="pre-img"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                    loading="lazy"
+                  />
+                  <!-- Badge restricción -->
+                  <div style="position: absolute; top: 10px; left: 10px; padding: 4px 9px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #e2e8f0; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                    {{ movie.restriccion_edad }}
+                  </div>
+                  <!-- Badge preventa -->
+                  <div style="position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; background: rgba(220,38,38,0.9); border-radius: 6px; color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;">
+                    PREVENTA
+                  </div>
+                  <!-- Overlay hover con play -->
+                  <div class="pre-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; backdrop-filter: blur(2px);">
+                    @if (movie.trailers?.length) {
+                      <div (click)="openTrailer(movie)" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.65); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style="margin-left: 2px;"><path d="M8 5v14l11-7z"/></svg>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <!-- Título -->
+                <p style="color: #cbd5e1; font-size: 0.88rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0 0 5px 0;"
+                   [title]="movie.titulo">
+                  {{ movie.titulo }}
+                </p>
+                @if (movie.fecha_estreno) {
+                  <p style="color: #475569; font-size: 0.75rem; margin: 0;">{{ movie.fecha_estreno | date:'dd MMM yyyy' : '' : 'es' }}</p>
+                }
+              </div>
+            } @empty {
+              <p style="color: #475569; font-size: 0.9rem; padding: 2rem 0;">No hay próximos estrenos disponibles.</p>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
   </main>
+
+  <!-- Footer mínimo -->
+  <footer style="padding: 1.5rem 3rem; border-top: 1px solid rgba(255,255,255,0.04); background: #060b14;">
+    <p style="color: #1e293b; font-size: 0.75rem; text-align: center; margin: 0;">© 2026 CinemaCore. Todos los derechos reservados.</p>
+  </footer>
+
+
+  <!-- ================= MODAL TRAILER ================= -->
+  @if (isModalOpen()) {
+    <div
+      style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1.5rem;"
+      (click)="closeTrailer()">
+      <!-- Backdrop -->
+      <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);"></div>
+
+      <!-- Contenido -->
+      <div
+        style="position: relative; z-index: 10; width: 100%; max-width: 900px; aspect-ratio: 16/9; border-radius: 18px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.08);"
+        (click)="$event.stopPropagation()">
+
+        <!-- Botón cerrar -->
+        <button
+          (click)="closeTrailer()"
+          style="position: absolute; top: 14px; right: 14px; z-index: 10; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+          onmouseover="this.style.background='#dc2626';this.style.borderColor='#dc2626'"
+          onmouseout="this.style.background='rgba(0,0,0,0.7)';this.style.borderColor='rgba(255,255,255,0.2)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <iframe
+          [src]="trailerUrl()!"
+          style="width: 100%; height: 100%; border: none;"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  }
+
 </div>
