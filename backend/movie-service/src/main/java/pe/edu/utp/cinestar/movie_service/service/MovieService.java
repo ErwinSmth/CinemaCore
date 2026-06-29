@@ -37,7 +37,7 @@ public class MovieService {
         try {
             return tmdbRestClient.searchMovies(query, "es-MX");
         } catch (Exception e) {
-            throw new TMDBIntegrationException("Error de comunicación o timeout con TMDB al buscar: " + query);
+            throw new TMDBIntegrationException("Error de comunicación o timeout con TMDB al buscar: " + query + ". Detalle: " + e.getMessage());
         }
     }
 
@@ -124,7 +124,8 @@ public class MovieService {
     }
 
     public List<Movie> getAllMoviesAdmin(String status, String search) {
-        return movieRepository.findByStatusAndSearch(status, search);
+        String searchQuery = (search != null && !search.isBlank()) ? "%" + search + "%" : null;
+        return movieRepository.findByStatusAndSearch(status, searchQuery);
     }
 
     public MovieDetailResponse getMovieById(Long id) {
@@ -164,8 +165,11 @@ public class MovieService {
             genreJson = "{\"generos\": [\"" + genre + "\"]}";
         }
 
+        // Formatear búsqueda para usar ILIKE directamente
+        String searchQuery = (search != null && !search.isBlank()) ? "%" + search + "%" : null;
+
         // Corrección: los @Param del repositorio son (search, genreJson) en ese orden
-        List<Movie> cartelera = movieRepository.findCartelera(search, genreJson);
+        List<Movie> cartelera = movieRepository.findCartelera(searchQuery, genreJson);
 
         return cartelera.stream().map(m -> {
             MovieCarteleraResponse dto = new MovieCarteleraResponse();

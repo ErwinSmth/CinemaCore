@@ -15,13 +15,13 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByTmdbId(Integer tmdbId);
 
     @Query("SELECT m FROM Movie m WHERE " +
-           "(:status IS NULL OR m.estado = :status) AND " +
-           "(:search IS NULL OR LOWER(m.titulo) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "(CAST(:status AS text) IS NULL OR m.estado = :status) AND " +
+           "(CAST(:search AS text) IS NULL OR m.titulo ILIKE CAST(:search AS text))")
     List<Movie> findByStatusAndSearch(@Param("status") String status, @Param("search") String search);
 
     @Query(value = "SELECT * FROM peliculas WHERE estado = 'CARTELERA' " +
-           "AND (:search IS NULL OR titulo ILIKE CONCAT('%', :search, '%')) " +
-           "AND (:genreJson IS NULL OR metadata @> CAST(CAST(:genreJson AS TEXT) AS jsonb))",
+           "AND (CAST(:search AS TEXT) IS NULL OR titulo ILIKE CAST(:search AS TEXT)) " +
+           "AND (CAST(:genreJson AS TEXT) IS NULL OR metadata @> CAST(CAST(:genreJson AS TEXT) AS jsonb))",
            nativeQuery = true)
     List<Movie> findCartelera(@Param("search") String search, @Param("genreJson") String genreJson);
 }

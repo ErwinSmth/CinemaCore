@@ -22,9 +22,11 @@ public class TmdbRestClient {
     private String apiToken;
 
     private final RestTemplate restTemplate;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    public TmdbRestClient() {
+    public TmdbRestClient(com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.restTemplate = new RestTemplate();
+        this.objectMapper = objectMapper;
     }
 
     private HttpEntity<String> getHttpEntity() {
@@ -42,8 +44,12 @@ public class TmdbRestClient {
                 .encode()
                 .toUri();
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), JsonNode.class);
-        return response.getBody();
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), String.class);
+        try {
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Error parseando respuesta JSON de TMDB", e);
+        }
     }
 
     public JsonNode getMovieDetails(int movieId, String appendToResponse, String language) {
@@ -54,7 +60,11 @@ public class TmdbRestClient {
                 .encode()
                 .toUri();
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), JsonNode.class);
-        return response.getBody();
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, getHttpEntity(), String.class);
+        try {
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Error parseando respuesta JSON de TMDB", e);
+        }
     }
 }

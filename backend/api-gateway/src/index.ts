@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import * as OpenApiValidator from 'express-openapi-validator';
 import rateLimit from 'express-rate-limit';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import { env } from './config/env';
 import authRoutes from './routes/auth.routes';
 import { authMiddleware } from './middleware/auth.middleware';
@@ -76,24 +76,28 @@ app.use('/api/v1/movies', (req: Request, res: Response, next: NextFunction) => {
   authMiddleware(req, res, next);
 }, createProxyMiddleware({
   target: env.MOVIE_SERVICE_URL,
-  changeOrigin: true
+  changeOrigin: true,
+  onProxyReq: fixRequestBody
 }));
 
 // Seat Service: Las reservas siempre requieren estar logueado
 app.use('/api/v1/seats', authMiddleware, createProxyMiddleware({
   target: env.SEAT_SERVICE_URL,
-  changeOrigin: true
+  changeOrigin: true,
+  onProxyReq: fixRequestBody
 }));
 
 // Showtime Service: Consultas de asientos publicas, programar funciones privado
 app.use('/api/v1/showtimes', createProxyMiddleware((pathname, req) => req.method === 'GET', {
   target: env.SHOWTIME_SERVICE_URL,
-  changeOrigin: true
+  changeOrigin: true,
+  onProxyReq: fixRequestBody
 }));
 
 app.use('/api/v1/showtimes', authMiddleware, createProxyMiddleware((pathname, req) => req.method !== 'GET', {
   target: env.SHOWTIME_SERVICE_URL,
-  changeOrigin: true
+  changeOrigin: true,
+  onProxyReq: fixRequestBody
 }));
 
 // --- Global Error Handler (OpenAPI Validator & Otros) ---

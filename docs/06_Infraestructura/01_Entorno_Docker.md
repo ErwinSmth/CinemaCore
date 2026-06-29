@@ -35,11 +35,18 @@ Cada microservicio cuenta con un `Dockerfile` optimizado con patrón **Multi-sta
     *   `cinestar-auth-service` (Spring Boot) -> Puerto `8081`
     *   `cinestar-movie-service` (Spring Boot) -> Puerto `8082`
 
-### 1.3. Monitoreo de Logs (Dozzle)
-Para facilitar la depuración, especialmente en entornos mixtos (Windows/Linux), se incluye **Dozzle**.
-*   **Imagen:** `amir20/dozzle:v8`
-*   **Puerto:** `9999:8080`
-*   Permite a los desarrolladores entrar a `http://localhost:9999` en su navegador para buscar, filtrar y visualizar los logs de cualquier contenedor en tiempo real, sin usar la terminal.
+### 1.3. Monitoreo de Logs
+Para inspeccionar logs de los contenedores en tiempo real se utilizan los comandos nativos de Docker Compose:
+
+```bash
+# Ver logs de todos los servicios en vivo
+docker compose logs -f
+
+# Ver logs de un servicio específico
+docker compose logs -f cinestar-movie-service
+```
+
+Alternativamente, se puede instalar **lazydocker** para una vista TUI completa de contenedores, logs y stats de recursos directamente en el terminal.
 
 ---
 

@@ -25,10 +25,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/movies").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/movies/cartelera").permitAll()
                         .requestMatchers(HttpMethod.GET, "/movies/{id:[\\d]+}").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
