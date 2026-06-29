@@ -9,14 +9,23 @@ Este documento define las tecnologías elegidas para el desarrollo del Frontend 
 *   **Lenguaje:** `TypeScript`
     *   **Propósito:** Provee tipado estático, previniendo errores en tiempo de ejecución. Los tipos se mapearán exactamente a los DTOs y respuestas que emite el API Gateway.
 
-## 2. Estilos y Diseño (UI)
+## 2. Estilos y Diseño (UI) - Design Tokens Oficiales
 
-*   **Estilización:** `Tailwind CSS v4`
-    *   **Propósito:** Framework de CSS basado en clases utilitarias. Permite iteración rápida y se acopla perfectamente con herramientas de generación visual por IA (como v0.dev).
-*   **Componentes Base:** `shadcn/ui`
-    *   **Propósito:** Provee componentes accesibles y hermosos (modales, botones, menús) que no vienen empaquetados en una librería pesada (como Bootstrap o Material UI), sino que el código fuente se copia al proyecto, otorgando 100% de control sobre el diseño.
-*   **Filosofía de Diseño:**
-    *   **Balance:** Se busca una interfaz simple e intuitiva, pero que atrape la atención visualmente (mediante micro-animaciones, manejo de sombras profundas y contrastes que transmitan la "experiencia de cine").
+Tras validar el prototipo visual (v0), se ha definido la siguiente guía de estilos **utilitaria, plana y oscura** (inspirada en cadenas internacionales), evitando adornos excesivos.
+
+*   **Estilización Base:** `Tailwind CSS v4`
+*   **Componentes Base:** `shadcn/ui` (con estilo flat, sin sombras gruesas).
+
+### Paleta de Colores (Tailwind Classes)
+*   **Fondo Principal (Background):** `bg-slate-900` (Gris oscuro elegante, no negro puro).
+*   **Superficies y Tarjetas (Cards/Modals):** `bg-slate-800`.
+*   **Elementos Interactivos (Inputs/Bordes):** Fondo `bg-slate-700` con borde `border-slate-600`.
+*   **Color Primario (Acento):** `bg-red-600` (hover: `bg-red-700`) para botones principales ("Get Tickets", "Sign In").
+*   **Textos:** `text-white` para títulos principales, `text-slate-300` para descripciones y `text-slate-400` para texto secundario.
+
+### Estilo Estructural
+*   **Minimalismo:** Las películas en la cartelera no llevan contenedores pesados (cards) ni sombras, consisten únicamente en el Póster, Título, Rating (`text-yellow-500`) y el botón rojo de compra.
+*   **Bordes:** Ligeramente redondeados (`rounded`), evitando radios exagerados.
 
 ## 3. Consumo de Datos y Estado
 
