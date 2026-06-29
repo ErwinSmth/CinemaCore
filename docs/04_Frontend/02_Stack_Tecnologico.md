@@ -4,17 +4,17 @@ Este documento define las tecnologías elegidas para el desarrollo del Frontend 
 
 ## 1. Tecnologías Core
 
-*   **Framework Base:** `Next.js` (App Router)
-    *   **Propósito:** Framework de React que permite Server-Side Rendering (SSR) y Static Site Generation (SSG). Es crucial para garantizar que el catálogo de películas sea indexado por los motores de búsqueda (SEO) y ofrezca tiempos de primera pintura ultrarrápidos.
+*   **Framework Base:** `Angular (Standalone Components)`
+    *   **Propósito:** Framework robusto de nivel empresarial que incluye enrutamiento, cliente HTTP y manejo de reactividad avanzado por defecto. Su arquitectura basada en Inyección de Dependencias y Servicios garantiza un código altamente escalable para el flujo de cine.
 *   **Lenguaje:** `TypeScript`
-    *   **Propósito:** Provee tipado estático, previniendo errores en tiempo de ejecución. Los tipos se mapearán exactamente a los DTOs y respuestas que emite el API Gateway.
+    *   **Propósito:** Provee tipado estático estricto, previniendo errores en tiempo de ejecución. Los tipos se mapearán exactamente a los DTOs y respuestas que emite el API Gateway.
 
 ## 2. Estilos y Diseño (UI) - Design Tokens Oficiales
 
 Tras validar el prototipo visual (v0), se ha definido la siguiente guía de estilos **utilitaria, plana y oscura** (inspirada en cadenas internacionales), evitando adornos excesivos.
 
 *   **Estilización Base:** `Tailwind CSS v4`
-*   **Componentes Base:** `shadcn/ui` (con estilo flat, sin sombras gruesas).
+*   **Componentes Base:** `spartan/ui` (clon directo de shadcn/ui para Angular, con estilo flat, sin sombras gruesas).
 
 ### Paleta de Colores (Tailwind Classes)
 *   **Fondo Principal (Background):** `bg-slate-900` (Gris oscuro elegante, no negro puro).
@@ -29,8 +29,7 @@ Tras validar el prototipo visual (v0), se ha definido la siguiente guía de esti
 
 ## 3. Consumo de Datos y Estado
 
-*   **Data Fetching & Caché:** `TanStack Query` (React Query)
-    *   **Propósito:** Maneja de forma asíncrona todas las peticiones hacia el **API Gateway**. Gestiona automáticamente los estados de carga (`isLoading`), los errores (`isError`), re-intentos y mantiene un caché inteligente en el navegador del cliente para evitar peticiones redundantes.
-*   **Estado Global:** `Zustand`
-    *   **Propósito:** Gestor de estado ultra ligero. Se utilizará exclusivamente para el estado global síncrono que no depende del servidor (por ejemplo: asientos seleccionados temporalmente en el flujo de compra, preferencias de tema oscuro/claro, alertas globales).
-
+*   **Data Fetching:** `Angular HttpClient` + `RxJS`
+    *   **Propósito:** Maneja de forma asíncrona todas las peticiones hacia el **API Gateway**. Mediante interceptores (HttpInterceptor) inyectaremos el token JWT globalmente. Los observables de RxJS nos permitirán cancelar peticiones (ej. debounce en búsquedas) y manejar flujos de datos complejos.
+*   **Estado Global (Local):** `Angular Signals` (Servicios Singletone)
+    *   **Propósito:** Gestor de estado reactivo y ultraligero nativo de Angular. Se utilizará para el estado global síncrono (ej. almacenar el JWT, rol de usuario en `AuthService`, o los asientos seleccionados temporalmente) evitando librerías pesadas externas.
