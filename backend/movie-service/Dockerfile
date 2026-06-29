@@ -10,7 +10,7 @@ WORKDIR /app
 # Copia el wrapper de Maven y dependencias primero para cache
 COPY backend/movie-service/mvnw .
 COPY backend/movie-service/.mvn .mvn
-RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 COPY backend/movie-service/pom.xml .
 
 RUN --mount=type=cache,target=/root/.m2 \

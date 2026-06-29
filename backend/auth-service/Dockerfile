@@ -10,7 +10,7 @@ WORKDIR /app
 # Copia el wrapper de Maven y le da permisos de ejecucion
 COPY mvnw .
 COPY .mvn .mvn
-RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
 # Copia el pom.xml primero para aprovechar el cache de capas de Docker
 # Si el pom.xml no cambia, Docker reutiliza esta capa sin re-descargar dependencias
