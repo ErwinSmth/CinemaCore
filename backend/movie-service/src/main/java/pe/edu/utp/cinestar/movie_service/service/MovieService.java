@@ -37,7 +37,8 @@ public class MovieService {
         try {
             return tmdbRestClient.searchMovies(query, "es-MX");
         } catch (Exception e) {
-            throw new TMDBIntegrationException("Error de comunicación o timeout con TMDB al buscar: " + query + ". Detalle: " + e.getMessage());
+            throw new TMDBIntegrationException(
+                    "Error de comunicación o timeout con TMDB al buscar: " + query + ". Detalle: " + e.getMessage());
         }
     }
 
@@ -48,11 +49,20 @@ public class MovieService {
         try {
             tmdbData = tmdbRestClient.getMovieDetails(tmdbId, "credits,videos,images", "es-MX");
         } catch (Exception e) {
-            throw new TMDBIntegrationException("Fallo de comunicación con TMDB o servicio inalcanzable para el ID: " + tmdbId);
+            throw new TMDBIntegrationException(
+                    "Fallo de comunicación con TMDB o servicio inalcanzable para el ID: " + tmdbId);
         }
 
         if (tmdbData == null || !tmdbData.has("id")) {
             throw new MovieNotFoundException("La película no existe en TMDB");
+        }
+
+        // Validacion de calidad
+        if (!tmdbData.has("overview") || tmdbData.get("overview").asText().isBlank() ||
+                !tmdbData.has("poster_path") || tmdbData.get("poster_path").isNull() ||
+                !tmdbData.has("genres") || !tmdbData.get("genres").isArray() || tmdbData.get("genres").isEmpty()) {
+            throw new IllegalArgumentException(
+                    "La película seleccionada no cuenta con información suficiente en TMDB (faltan sinopsis, póster o géneros). Por favor, seleccione otra versión.");
         }
 
         Movie movie = movieRepository.findByTmdbId(tmdbId).orElse(null);
@@ -76,7 +86,8 @@ public class MovieService {
             metadataNode.put("posterPath", "https://image.tmdb.org/t/p/w500" + tmdbData.get("poster_path").asText());
         }
         if (tmdbData.has("backdrop_path") && !tmdbData.get("backdrop_path").isNull()) {
-            metadataNode.put("backdropPath", "https://image.tmdb.org/t/p/w1280" + tmdbData.get("backdrop_path").asText());
+            metadataNode.put("backdropPath",
+                    "https://image.tmdb.org/t/p/w1280" + tmdbData.get("backdrop_path").asText());
         }
 
         ArrayNode genresNode = metadataNode.putArray("generos");
@@ -90,7 +101,8 @@ public class MovieService {
             if (credits.has("cast") && credits.get("cast").isArray()) {
                 int count = 0;
                 for (JsonNode actor : credits.get("cast")) {
-                    if (count >= 5) break;
+                    if (count >= 5)
+                        break;
                     castNode.add(actor.get("name").asText());
                     count++;
                 }
@@ -139,12 +151,15 @@ public class MovieService {
     public Movie updateMovie(Long id, UpdateMovieRequest req) {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new MovieNotFoundException("Película no encontrada con ID: " + id));
-        if (req.getTitle() != null) movie.setTitulo(req.getTitle());
-        if (req.getOverview() != null) movie.setSinopsis(req.getOverview());
+        if (req.getTitle() != null)
+            movie.setTitulo(req.getTitle());
+        if (req.getOverview() != null)
+            movie.setSinopsis(req.getOverview());
         if (req.getAgeRating() != null) {
             restriccionEdadRepository.findByCodigo(req.getAgeRating()).ifPresent(movie::setRestriccionEdad);
         }
-        if (req.getStatus() != null) movie.setEstado(req.getStatus());
+        if (req.getStatus() != null)
+            movie.setEstado(req.getStatus());
         return movieRepository.save(movie);
     }
 
@@ -196,9 +211,12 @@ public class MovieService {
 
         JsonNode meta = m.getMetadata();
         if (meta != null) {
-            if (meta.has("posterPath")) dto.setPosterPath(meta.get("posterPath").asText());
-            if (meta.has("backdropPath")) dto.setBackdropPath(meta.get("backdropPath").asText());
-            if (meta.has("director")) dto.setDirector(meta.get("director").asText());
+            if (meta.has("posterPath"))
+                dto.setPosterPath(meta.get("posterPath").asText());
+            if (meta.has("backdropPath"))
+                dto.setBackdropPath(meta.get("backdropPath").asText());
+            if (meta.has("director"))
+                dto.setDirector(meta.get("director").asText());
 
             if (meta.has("actores") && meta.get("actores").isArray()) {
                 List<String> actores = new ArrayList<>();
