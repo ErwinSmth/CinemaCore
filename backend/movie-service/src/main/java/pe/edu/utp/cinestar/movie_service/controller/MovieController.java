@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.utp.cinestar.movie_service.model.dto.MovieAdminResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieDetailResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
@@ -35,7 +36,7 @@ public class MovieController {
 
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<List<Movie>> getAllMoviesAdmin(
+    public ResponseEntity<List<MovieAdminResponse>> getAllMoviesAdmin(
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "search", required = false) String search) {
         return ResponseEntity.ok(movieService.getAllMoviesAdmin(status, search));

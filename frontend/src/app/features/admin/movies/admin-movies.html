@@ -1,0 +1,202 @@
+<div class="h-full flex flex-col">
+  <!-- Top Bar -->
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+      Catálogo de Películas
+    </h2>
+    <button (click)="openTmdbModal()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-5 rounded-lg transition shadow-[0_0_15px_rgba(220,38,38,0.3)] flex items-center gap-2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Importar desde TMDB
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="flex items-center gap-2 mb-6">
+    <button (click)="setFilter('')" [class.bg-slate-700]="activeFilter() === ''" [class.text-white]="activeFilter() === ''" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition">Todos</button>
+    <button (click)="setFilter('CARTELERA')" [class.bg-slate-700]="activeFilter() === 'CARTELERA'" [class.text-white]="activeFilter() === 'CARTELERA'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition">En Cartelera</button>
+    <button (click)="setFilter('PRE-ESTRENO')" [class.bg-slate-700]="activeFilter() === 'PRE-ESTRENO'" [class.text-white]="activeFilter() === 'PRE-ESTRENO'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition">Pre-Estrenos</button>
+    <button (click)="setFilter('INACTIVO')" [class.bg-slate-700]="activeFilter() === 'INACTIVO'" [class.text-white]="activeFilter() === 'INACTIVO'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition text-yellow-500">Inactivas</button>
+    <button (click)="setFilter('RETIRADA')" [class.bg-slate-700]="activeFilter() === 'RETIRADA'" [class.text-white]="activeFilter() === 'RETIRADA'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition text-red-500">Retiradas</button>
+  </div>
+
+  <!-- Grilla de Tarjetas -->
+  <div *ngIf="isLoadingMovies()" class="flex-1 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+  </div>
+
+  <div *ngIf="!isLoadingMovies() && movies().length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-500">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-4"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect></svg>
+    <p>No hay películas en el catálogo local con este filtro.</p>
+  </div>
+
+  <div *ngIf="!isLoadingMovies() && movies().length > 0" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+    <div *ngFor="let m of movies()" class="bg-[#060b14] border border-slate-800 rounded-xl overflow-hidden group hover:border-slate-600 transition shadow-lg relative">
+      <!-- Badge Estado -->
+      <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black/80 text-white border"
+           [ngClass]="{
+             'border-green-500 text-green-400': m.estado === 'CARTELERA',
+             'border-blue-500 text-blue-400': m.estado === 'PRE-ESTRENO',
+             'border-yellow-500 text-yellow-400': m.estado === 'INACTIVO'
+           }">
+        {{m.estado}}
+      </div>
+      
+      <!-- Poster -->
+      <div class="aspect-[2/3] relative overflow-hidden bg-slate-900">
+        <img *ngIf="getPosterPath(m)" [src]="getPosterPath(m)" [alt]="m.titulo" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+        <div *ngIf="!getPosterPath(m)" class="w-full h-full flex items-center justify-center text-slate-700 text-sm">Sin Poster</div>
+        
+        <!-- Overlay Acciones -->
+        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
+          <button (click)="openEditModal(m)" class="w-3/4 bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 rounded transition border border-slate-600 text-sm">Editar</button>
+          <button (click)="deleteMovie(m.id)" class="w-3/4 bg-red-900/50 hover:bg-red-800/80 text-red-300 font-medium py-2 rounded transition border border-red-900/80 text-sm">Eliminar</button>
+        </div>
+      </div>
+      
+      <!-- Info Básica -->
+      <div class="p-3">
+        <h3 class="text-white font-bold text-sm truncate" [title]="m.titulo">{{m.titulo}}</h3>
+        <p class="text-slate-500 text-xs mt-1">{{m.duracionMin}} min • {{m.restriccionEdad?.codigo}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL TMDB IMPORT ================= -->
+<div *ngIf="isTmdbModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden max-h-[90vh]">
+    
+    <!-- Header Buscador -->
+    <div class="p-6 border-b border-slate-800 bg-[#060b14]">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Buscar película
+        </h3>
+        <button (click)="closeTmdbModal()" class="text-slate-500 hover:text-white transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div class="flex gap-2">
+        <input type="text" [ngModel]="tmdbSearchQuery()" (ngModelChange)="tmdbSearchQuery.set($event)" (keyup.enter)="searchTmdb()" placeholder="Ej: Avengers, Interstellar..." class="flex-1 bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 transition">
+        <button (click)="searchTmdb()" [disabled]="isSearchingTmdb()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition disabled:opacity-50">
+          {{ isSearchingTmdb() ? 'Buscando...' : 'Buscar' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="flex-1 overflow-y-auto p-6 bg-[#0f172a]">
+      <div *ngIf="tmdbResults().length === 0 && !isSearchingTmdb()" class="text-center text-slate-500 py-10">
+        Escribe un título y presiona Buscar.
+      </div>
+      
+      <div *ngIf="tmdbResults().length > 0" class="flex flex-col gap-4">
+        <!-- Fila de Resultado -->
+        <div *ngFor="let result of tmdbResults()" class="flex items-center gap-4 bg-[#060b14] border border-slate-800 p-3 rounded-xl hover:border-slate-600 transition group">
+          <!-- Poster -->
+          <div class="w-16 h-24 bg-slate-900 rounded shrink-0 overflow-hidden">
+            <img *ngIf="result.poster_path" [src]="'https://image.tmdb.org/t/p/w200' + result.poster_path" class="w-full h-full object-cover">
+          </div>
+          
+          <!-- Datos -->
+          <div class="flex-1">
+            <h4 class="text-white font-bold text-lg">{{result.title}}</h4>
+            <p class="text-slate-400 text-sm">Estreno: {{result.release_date || 'Desconocido'}}</p>
+          </div>
+          
+          <!-- Boton Importar -->
+          <button (click)="importFromTmdb(result.id)" [disabled]="isImporting()" class="mr-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2 rounded font-medium transition opacity-0 group-hover:opacity-100 disabled:opacity-50 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Importar
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL EDICIÓN LOCAL ================= -->
+<div *ngIf="isEditModalOpen() && editingMovie()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl flex overflow-hidden max-h-[90vh]">
+    
+    <!-- Lado Izquierdo: Poster Visor (Solo Lectura) -->
+    <div class="w-1/3 bg-black relative">
+      <img *ngIf="getPosterPath(editingMovie())" [src]="getPosterPath(editingMovie())" class="w-full h-full object-cover opacity-60">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent"></div>
+      <div class="absolute bottom-6 left-6 right-6">
+        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Solo Lectura TMDB</span>
+        <h3 class="text-white font-black text-2xl mt-2 leading-tight">{{editingMovie()?.titulo}}</h3>
+      </div>
+    </div>
+
+    <!-- Lado Derecho: Formulario Edición -->
+    <div class="w-2/3 flex flex-col">
+      <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-[#060b14]">
+        <h3 class="text-xl font-bold text-white">Editar Configuración Local</h3>
+        <button (click)="closeEditModal()" class="text-slate-500 hover:text-white transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="flex-1 p-6 overflow-y-auto space-y-6">
+        <!-- Título Local -->
+        <div>
+          <label class="block text-slate-400 text-sm font-semibold mb-2">Título Local</label>
+          <input type="text" [ngModel]="editForm().titulo" (ngModelChange)="updateEditTitulo($event)" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 transition">
+        </div>
+
+        <!-- Sinopsis -->
+        <div>
+          <label class="block text-slate-400 text-sm font-semibold mb-2">Sinopsis</label>
+          <textarea [ngModel]="editForm().sinopsis" (ngModelChange)="updateEditSinopsis($event)" rows="4" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 transition resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Estado (Botones Rápidos) -->
+          <div>
+            <label class="block text-slate-400 text-sm font-semibold mb-2">Estado en Cartelera</label>
+            <div class="flex flex-col gap-2">
+              <button (click)="setEditEstado('INACTIVO')" [class.border-yellow-500]="editForm().estado === 'INACTIVO'" [class.bg-yellow-900]="editForm().estado === 'INACTIVO'" class="text-left px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">
+                <span class="text-yellow-500 mr-2">●</span> Inactivo (Oculto)
+              </button>
+              <button (click)="setEditEstado('PRE-ESTRENO')" [class.border-blue-500]="editForm().estado === 'PRE-ESTRENO'" [class.bg-blue-900]="editForm().estado === 'PRE-ESTRENO'" class="text-left px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">
+                <span class="text-blue-500 mr-2">●</span> Pre-Estreno
+              </button>
+              <button (click)="setEditEstado('CARTELERA')" [class.border-green-500]="editForm().estado === 'CARTELERA'" [class.bg-green-900]="editForm().estado === 'CARTELERA'" class="text-left px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">
+                <span class="text-green-500 mr-2">●</span> En Cartelera
+              </button>
+              <button (click)="setEditEstado('RETIRADA')" [class.border-red-500]="editForm().estado === 'RETIRADA'" [class.bg-red-900]="editForm().estado === 'RETIRADA'" class="text-left px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">
+                <span class="text-red-500 mr-2">●</span> Retirada (Fuera de Cine)
+              </button>
+            </div>
+          </div>
+
+          <!-- Restricción Edad -->
+          <div>
+            <label class="block text-slate-400 text-sm font-semibold mb-2">Restricción de Edad</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button (click)="setEditRestriccion('APT')" [class.bg-slate-700]="editForm().restriccionCodigo === 'APT'" [class.border-slate-500]="editForm().restriccionCodigo === 'APT'" class="px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">APT</button>
+              <button (click)="setEditRestriccion('12+')" [class.bg-slate-700]="editForm().restriccionCodigo === '12+'" [class.border-slate-500]="editForm().restriccionCodigo === '12+'" class="px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">12+</button>
+              <button (click)="setEditRestriccion('14+')" [class.bg-slate-700]="editForm().restriccionCodigo === '14+'" [class.border-slate-500]="editForm().restriccionCodigo === '14+'" class="px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">14+</button>
+              <button (click)="setEditRestriccion('16+')" [class.bg-slate-700]="editForm().restriccionCodigo === '16+'" [class.border-slate-500]="editForm().restriccionCodigo === '16+'" class="px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">16+</button>
+              <button (click)="setEditRestriccion('18+')" [class.bg-slate-700]="editForm().restriccionCodigo === '18+'" [class.border-slate-500]="editForm().restriccionCodigo === '18+'" class="px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500 text-white font-medium transition text-sm">18+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-6 border-t border-slate-800 bg-[#060b14] flex justify-end gap-4">
+        <button (click)="closeEditModal()" class="px-6 py-2 rounded-lg font-semibold text-slate-400 hover:text-white transition">Cancelar</button>
+        <button (click)="saveMovie()" [disabled]="isSaving()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-lg font-semibold transition shadow-lg disabled:opacity-50 flex items-center gap-2">
+          {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

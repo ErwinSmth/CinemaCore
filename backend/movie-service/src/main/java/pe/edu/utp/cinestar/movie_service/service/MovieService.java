@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.edu.utp.cinestar.movie_service.exception.MovieNotFoundException;
 import pe.edu.utp.cinestar.movie_service.exception.TMDBIntegrationException;
 import pe.edu.utp.cinestar.movie_service.model.Movie;
+import pe.edu.utp.cinestar.movie_service.model.dto.MovieAdminResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieCarteleraResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.MovieDetailResponse;
 import pe.edu.utp.cinestar.movie_service.model.dto.UpdateMovieRequest;
@@ -23,6 +24,7 @@ import pe.edu.utp.cinestar.movie_service.repository.tmdb.TmdbRestClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,7 +86,7 @@ public class MovieService {
             movie.setDuracionMin(tmdbData.get("runtime").asInt());
         }
 
-        ObjectNode metadataNode = objectMapper.createObjectNode();
+        com.fasterxml.jackson.databind.node.ObjectNode metadataNode = objectMapper.createObjectNode();
 
         if (tmdbData.has("poster_path") && !tmdbData.get("poster_path").isNull()) {
             metadataNode.put("posterPath", "https://image.tmdb.org/t/p/w500" + tmdbData.get("poster_path").asText());
@@ -94,17 +96,17 @@ public class MovieService {
                     "https://image.tmdb.org/t/p/w1280" + tmdbData.get("backdrop_path").asText());
         }
 
-        ArrayNode genresNode = metadataNode.putArray("generos");
+        com.fasterxml.jackson.databind.node.ArrayNode genresNode = metadataNode.putArray("generos");
         if (tmdbData.has("genres") && tmdbData.get("genres").isArray()) {
             tmdbData.get("genres").forEach(g -> genresNode.add(g.get("name").asText()));
         }
 
         if (tmdbData.has("credits")) {
-            JsonNode credits = tmdbData.get("credits");
-            ArrayNode castNode = metadataNode.putArray("actores");
+            com.fasterxml.jackson.databind.JsonNode credits = tmdbData.get("credits");
+            com.fasterxml.jackson.databind.node.ArrayNode castNode = metadataNode.putArray("actores");
             if (credits.has("cast") && credits.get("cast").isArray()) {
                 int count = 0;
-                for (JsonNode actor : credits.get("cast")) {
+                for (com.fasterxml.jackson.databind.JsonNode actor : credits.get("cast")) {
                     if (count >= 5)
                         break;
                     castNode.add(actor.get("name").asText());
@@ -113,7 +115,7 @@ public class MovieService {
             }
 
             if (credits.has("crew") && credits.get("crew").isArray()) {
-                for (JsonNode crew : credits.get("crew")) {
+                for (com.fasterxml.jackson.databind.JsonNode crew : credits.get("crew")) {
                     if ("Director".equals(crew.get("job").asText())) {
                         metadataNode.put("director", crew.get("name").asText());
                         break;
@@ -122,11 +124,11 @@ public class MovieService {
             }
         }
 
-        ArrayNode trailersNode = metadataNode.putArray("trailers");
+        com.fasterxml.jackson.databind.node.ArrayNode trailersNode = metadataNode.putArray("trailers");
         if (tmdbData.has("videos") && tmdbData.get("videos").has("results")) {
-            JsonNode videos = tmdbData.get("videos").get("results");
+            com.fasterxml.jackson.databind.JsonNode videos = tmdbData.get("videos").get("results");
             if (videos.isArray()) {
-                for (JsonNode video : videos) {
+                for (com.fasterxml.jackson.databind.JsonNode video : videos) {
                     if ("YouTube".equals(video.get("site").asText()) && "Trailer".equals(video.get("type").asText())) {
                         trailersNode.add("https://www.youtube.com/watch?v=" + video.get("key").asText());
                     }
@@ -139,9 +141,59 @@ public class MovieService {
         return movie.getId();
     }
 
-    public List<Movie> getAllMoviesAdmin(String status, String search) {
+    public List<MovieAdminResponse> getAllMoviesAdmin(String status, String search) {
         String searchQuery = (search != null && !search.isBlank()) ? "%" + search + "%" : null;
-        return movieRepository.findByStatusAndSearch(status, searchQuery);
+        return movieRepository.findByStatusAndSearch(status, searchQuery).stream()
+                .map(this::toAdminResponse)
+                .toList();
+    }
+
+    private MovieAdminResponse toAdminResponse(Movie m) {
+        MovieAdminResponse dto = new MovieAdminResponse();
+        dto.setId(m.getId());
+        dto.setTmdbId(m.getTmdbId());
+        dto.setTitulo(m.getTitulo());
+        dto.setSinopsis(m.getSinopsis());
+        dto.setDuracionMin(m.getDuracionMin());
+        
+        pe.edu.utp.cinestar.movie_service.model.dto.MovieAdminResponseRestriccionEdad reDto = new pe.edu.utp.cinestar.movie_service.model.dto.MovieAdminResponseRestriccionEdad();
+        if (m.getRestriccionEdad() != null) {
+            reDto.setCodigo(m.getRestriccionEdad().getCodigo());
+            reDto.setDescripcion(m.getRestriccionEdad().getDescripcion());
+        }
+        dto.setRestriccionEdad(reDto);
+        
+        dto.setEstado(m.getEstado());
+        if (m.getFechaEstreno() != null) dto.setFechaEstreno(m.getFechaEstreno());
+        if (m.getCreatedAt() != null) dto.setCreatedAt(m.getCreatedAt().atOffset(java.time.ZoneOffset.UTC));
+        if (m.getUpdatedAt() != null) dto.setUpdatedAt(m.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC));
+
+        com.fasterxml.jackson.databind.JsonNode meta = m.getMetadata();
+        if (meta != null && !meta.isNull()) {
+            if (meta.has("posterPath"))
+                dto.setPosterPath(meta.get("posterPath").asText());
+            if (meta.has("backdropPath"))
+                dto.setBackdropPath(meta.get("backdropPath").asText());
+            if (meta.has("director"))
+                dto.setDirector(meta.get("director").asText());
+
+            if (meta.has("actores") && meta.get("actores").isArray()) {
+                List<String> actores = new ArrayList<>();
+                meta.get("actores").forEach(a -> actores.add(a.asText()));
+                dto.setActores(actores);
+            }
+            if (meta.has("generos") && meta.get("generos").isArray()) {
+                List<String> generos = new ArrayList<>();
+                meta.get("generos").forEach(g -> generos.add(g.asText()));
+                dto.setGeneros(generos);
+            }
+            if (meta.has("trailers") && meta.get("trailers").isArray()) {
+                List<String> trailers = new ArrayList<>();
+                meta.get("trailers").forEach(t -> trailers.add(t.asText()));
+                dto.setTrailers(trailers);
+            }
+        }
+        return dto;
     }
 
     public MovieDetailResponse getMovieById(Long id) {
@@ -210,7 +262,7 @@ public class MovieService {
         dto.setTitulo(m.getTitulo());
         dto.setEstado(m.getEstado());
         dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
-        if (m.getMetadata() != null) {
+        if (m.getMetadata() != null && !m.getMetadata().isNull()) {
             if (m.getMetadata().has("posterPath"))
                 dto.setPosterPath(m.getMetadata().get("posterPath").asText());
             if (m.getMetadata().has("backdropPath"))
@@ -236,8 +288,8 @@ public class MovieService {
         dto.setEstado(m.getEstado());
         dto.setRestriccionEdad(m.getRestriccionEdad() != null ? m.getRestriccionEdad().getCodigo() : null);
 
-        JsonNode meta = m.getMetadata();
-        if (meta != null) {
+        com.fasterxml.jackson.databind.JsonNode meta = m.getMetadata();
+        if (meta != null && !meta.isNull()) {
             if (meta.has("posterPath"))
                 dto.setPosterPath(meta.get("posterPath").asText());
             if (meta.has("backdropPath"))

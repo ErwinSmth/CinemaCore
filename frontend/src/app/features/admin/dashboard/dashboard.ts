@@ -1,13 +1,13 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MovieService } from '../../../core/services/movie.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -18,6 +18,9 @@ export class Dashboard implements OnInit {
   // Computados
   carteleraCount = computed(() => this.movieService.cartelera().length);
   preEstrenosCount = computed(() => this.movieService.preEstrenos().length);
+
+  // Computed para saber si estamos en la raíz del admin
+  isDashboardHome = computed(() => this.router.url === '/admin');
 
   ngOnInit() {
     if (this.movieService.cartelera().length === 0) {
