@@ -14,7 +14,7 @@ La base de datos `db_movies` utiliza un enfoque híbrido que mezcla el modelo re
 ### 1. Tabla `restriccion_edad` (Age Restrictions)
 Tabla de catálogo o diccionario que define las clasificaciones por edad permitidas.
 *   `restriccion_id` (INTEGER / UUID, Primary Key)
-*   `codigo` (VARCHAR 10, Unique): "APT", "7+", "12+", "14+", "16+", "18+".
+*   `codigo` (VARCHAR 10, Unique): "APT", "7+", "12+", "14+", "16+", "18+". **Advertencia Crítica:** El símbolo "+" va estrictamente al final. Si el Frontend envía "+18" en lugar de "18+", la base de datos lo ignorará y fallará silenciosamente.
 *   `descripcion` (VARCHAR 100): Ej. "Apto para todos", "Mayores de 14 años".
 
 ### 2. Tabla `peliculas` (Movies)
@@ -25,7 +25,9 @@ Tabla principal del catálogo de cine.
 *   `sinopsis` (TEXT)
 *   `duracion_min` (INTEGER): Vital para el cálculo de horarios en el Showtime Service.
 *   `fecha_estreno` (DATE)
-*   `estado` (VARCHAR 20): Valores ("INACTIVO", "PRE-ESTRENO", "CARTELERA", "ELIMINADA", "RETIRADA"). Por defecto `INACTIVO` para ocultar las importaciones de TMDB hasta su aprobación.
+*   `estado` (VARCHAR 20): Por defecto `INACTIVO` para ocultar las importaciones de TMDB hasta su aprobación. Diferencia clave de estados finales:
+    *   **RETIRADA:** Película que terminó su ciclo en cines exitosamente. Se mantiene para historial de ventas y contabilidad (Soft Delete del ciclo normal).
+    *   **ELIMINADA:** Película importada por accidente o error humano que nunca debió estar. Se oculta pero no se hace hard-delete por integridad referencial (Soft Delete de error).
 *   `restriccion_id` (INTEGER / UUID, Foreign Key -> `restriccion_edad.restriccion_id`): Relación N:1 con el catálogo de edades.
 *   `metadata` (JSONB): Columna especial para almacenar datos anidados o variables como listas de actores, directores, URLs de imágenes y URLs de trailers de YouTube.
 
