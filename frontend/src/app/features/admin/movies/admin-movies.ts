@@ -30,6 +30,11 @@ export class AdminMovies implements OnInit {
   isSaving = signal<boolean>(false);
   editForm = signal<UpdateMovieRequest>({ titulo: '', sinopsis: '', estado: '' });
 
+  // Estado Modal Eliminar
+  isDeleteModalOpen = signal<boolean>(false);
+  movieToDelete = signal<Movie | null>(null);
+  isDeleting = signal<boolean>(false);
+
   ngOnInit() {
     this.loadMovies();
   }
@@ -172,15 +177,31 @@ export class AdminMovies implements OnInit {
     });
   }
 
-  deleteMovie(id: number) {
-    if (!confirm('¿Estás seguro de eliminar lógicamente esta película?')) return;
-    this.movieService.deleteMovie(id).subscribe({
+  deleteMovie(movie: Movie) {
+    this.movieToDelete.set(movie);
+    this.isDeleteModalOpen.set(true);
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen.set(false);
+    this.movieToDelete.set(null);
+  }
+
+  confirmDelete() {
+    const movie = this.movieToDelete();
+    if (!movie) return;
+
+    this.isDeleting.set(true);
+    this.movieService.deleteMovie(movie.id).subscribe({
       next: () => {
+        this.isDeleting.set(false);
+        this.closeDeleteModal();
         this.loadMovies();
         this.movieService.fetchCartelera().subscribe();
         this.movieService.fetchPreEstrenos().subscribe();
       },
       error: (err) => {
+        this.isDeleting.set(false);
         alert(err.error?.message || 'Error eliminando la película.');
       }
     });

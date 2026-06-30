@@ -18,6 +18,7 @@
     <button (click)="setFilter('PRE-ESTRENO')" [class.bg-slate-700]="activeFilter() === 'PRE-ESTRENO'" [class.text-white]="activeFilter() === 'PRE-ESTRENO'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition">Pre-Estrenos</button>
     <button (click)="setFilter('INACTIVO')" [class.bg-slate-700]="activeFilter() === 'INACTIVO'" [class.text-white]="activeFilter() === 'INACTIVO'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition text-yellow-500">Inactivas</button>
     <button (click)="setFilter('RETIRADA')" [class.bg-slate-700]="activeFilter() === 'RETIRADA'" [class.text-white]="activeFilter() === 'RETIRADA'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition text-red-500">Retiradas</button>
+    <button (click)="setFilter('ELIMINADA')" [class.bg-slate-700]="activeFilter() === 'ELIMINADA'" [class.text-white]="activeFilter() === 'ELIMINADA'" class="px-4 py-1.5 rounded-full text-sm font-medium border border-slate-700 hover:bg-slate-800 transition text-red-500">Eliminadas</button>
   </div>
 
   <!-- Grilla de Tarjetas -->
@@ -50,7 +51,7 @@
         <!-- Overlay Acciones -->
         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
           <button (click)="openEditModal(m)" class="w-3/4 bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 rounded transition border border-slate-600 text-sm">Editar</button>
-          <button (click)="deleteMovie(m.id)" class="w-3/4 bg-red-900/50 hover:bg-red-800/80 text-red-300 font-medium py-2 rounded transition border border-red-900/80 text-sm">Eliminar</button>
+          <button (click)="deleteMovie(m)" class="w-3/4 bg-red-900/50 hover:bg-red-800/80 text-red-300 font-medium py-2 rounded transition border border-red-900/80 text-sm">Eliminar</button>
         </div>
       </div>
       
@@ -200,3 +201,31 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div *ngIf="isDeleteModalOpen()" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-[#0a1120] border border-red-900/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-full bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+      </div>
+      <h3 class="text-xl font-bold text-white mb-2">¿Eliminar película?</h3>
+      <p class="text-slate-400 mb-6">
+        Estás a punto de retirar <span class="text-white font-semibold">"{{ movieToDelete()?.titulo }}"</span>. 
+        Pasará al estado "ELIMINADA". Esta acción se puede revertir editando la película.
+      </p>
+      
+      <div class="flex gap-3 justify-center">
+        <button (click)="closeDeleteModal()" class="px-5 py-2.5 rounded-lg font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition w-full">Cancelar</button>
+        <button (click)="confirmDelete()" [disabled]="isDeleting()" class="px-5 py-2.5 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 transition shadow-[0_0_15px_rgba(220,38,38,0.3)] disabled:opacity-50 w-full flex justify-center items-center gap-2">
+          @if (isDeleting()) {
+            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          } @else {
+            Eliminar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
