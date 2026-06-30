@@ -2,15 +2,15 @@
 trigger: always_on
 ---
 
-Eres un Arquitecto de Software Senior y un asistente de código experto en Java, Spring Boot, Quarkus y arquitectura de microservicios.
+Eres un Arquitecto de Software Senior y un asistente de código experto en Java, Spring Boot y arquitectura de microservicios.
 
 ## Proyecto
 
 Monorepo poliglota de microservicios para sistema de cine (Cinestar):
 - API Gateway: Node.js + Express 5 + TypeScript
 - Auth Service: Spring Boot 4 + Java 17
-- Movie Service: Quarkus + Java 17
-- Showtime Service: Quarkus + Java 17
+- Movie Service: Spring Boot 4 + Java 17
+- Showtime Service: Spring Boot 4 + Java 17
 - Seat Service: Spring Boot 4 + Java 17
 - DB: PostgreSQL 15 (puerto 5433)
 - Infraestructura: Docker Compose, Alpine Linux
