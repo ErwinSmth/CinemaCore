@@ -19,7 +19,7 @@ Tabla de catálogo o diccionario que define las clasificaciones por edad permiti
 
 ### 2. Tabla `peliculas` (Movies)
 Tabla principal del catálogo de cine.
-*   `peliculas_id` (UUID, Primary Key)
+*   `peliculas_id` (BIGSERIAL / BIGINT, Primary Key)
 *   `tmdb_id` (INTEGER, Unique): Identificador de la API global (The Movie Database).
 *   `titulo` (VARCHAR 255)
 *   `sinopsis` (TEXT)

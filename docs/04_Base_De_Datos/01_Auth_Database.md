@@ -13,7 +13,7 @@ La base de datos `db_auth` utiliza una relación de **Muchos a Muchos (N:M)** cl
 
 ### 1. Tabla `usuario` (Users)
 Almacena las credenciales principales y datos de identidad.
-*   `user_id` (UUID, Primary Key)
+*   `user_id` (BIGSERIAL / BIGINT, Primary Key)
 *   `email` (VARCHAR 255, Unique, Not Null)
 *   `contraseña` (VARCHAR 255, Not Null): Almacena el hash generado por BCrypt, nunca el texto plano.
 *   `nombres` (VARCHAR 100)
@@ -23,13 +23,13 @@ Almacena las credenciales principales y datos de identidad.
 
 ### 2. Tabla `roles` (Roles)
 Diccionario estático de roles de seguridad.
-*   `rol_id` (INTEGER / UUID, Primary Key)
+*   `rol_id` (SERIAL / INTEGER, Primary Key)
 *   `nombre` (VARCHAR 50, Unique, Not Null): Ejemplos: `ROLE_CLIENTE`, `ROLE_ADMINISTRADOR`, `ROLE_TAQUILLERO`.
 
 ### 3. Tabla `user_role` (Junction Table)
 Tabla intermedia que resuelve la relación Muchos a Muchos.
-*   `user_id` (UUID, Foreign Key -> `usuario.user_id`)
-*   `rol_id` (INTEGER / UUID, Foreign Key -> `roles.rol_id`)
+*   `user_id` (BIGINT, Foreign Key -> `usuario.user_id`)
+*   `rol_id` (INTEGER, Foreign Key -> `roles.rol_id`)
 *   *(Opcional pero recomendado)*: Primary Key compuesta por `(user_id, rol_id)` para evitar que a un usuario se le asigne el mismo rol dos veces.
 
 ---

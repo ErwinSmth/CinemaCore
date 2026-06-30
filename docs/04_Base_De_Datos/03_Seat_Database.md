@@ -13,18 +13,18 @@ La base de datos `db_seats` está altamente optimizada para manejar concurrencia
 
 ### 1. Tabla `asientos` (Seats)
 Representa la distribución física y estática de las butacas en una sala.
-*   `asientos_id` (UUID, Primary Key)
-*   `sala_id` (UUID): Referencia externa a la sala física del cine.
+*   `asientos_id` (BIGSERIAL / BIGINT, Primary Key)
+*   `sala_id` (BIGINT): Referencia externa a la sala física del cine.
 *   `fila_butaca` (VARCHAR 10): Ej. "A", "G".
 *   `numero_butaca` (INTEGER): Ej. 14.
 *   `tipo` (VARCHAR 50): Ej. "VIP", "REGULAR", "DISCAPACITADO".
 
 ### 2. Tabla `tickets` (Tickets)
 Representa el estado transaccional de un asiento para una función específica. Esta tabla es el núcleo de la estrategia de concurrencia.
-*   `ticket_id` (UUID, Primary Key)
-*   `funcion_id` (UUID): Referencia externa al Showtime (función programada).
-*   `asientos_id` (UUID, Foreign Key -> `asientos.asientos_id`)
-*   `usuario_id` (UUID, Nullable): ID del usuario que reservó o compró. Nace como NULL.
+*   `ticket_id` (BIGSERIAL / BIGINT, Primary Key)
+*   `funcion_id` (BIGINT): Referencia externa al Showtime (función programada).
+*   `asientos_id` (BIGINT, Foreign Key -> `asientos.asientos_id`)
+*   `usuario_id` (BIGINT, Nullable): ID del usuario que reservó o compró. Nace como NULL.
 *   `estado` (VARCHAR 20): El Semáforo del Negocio (`AVAILABLE`, `LOCKED`, `SOLD`).
 *   `tiempo_bloqueo` (TIMESTAMP, Nullable): El Temporizador de Abandono. Fecha/Hora límite en estado `LOCKED`.
 *   `version` (INTEGER): El Escudo de BD. Controlado por la anotación `@Version` de JPA para manejar el Optimistic Locking de manera nativa.

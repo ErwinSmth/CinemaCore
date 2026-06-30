@@ -13,23 +13,23 @@ La base de datos `db_showtime` organiza la cartelera operativa, mapeando qué pe
 
 ### 1. Tabla `salas` (Rooms/Theaters)
 Representa los espacios físicos del cine.
-*   `sala_id` (UUID, Primary Key)
+*   `sala_id` (BIGSERIAL / BIGINT, Primary Key)
 *   `nombre` (VARCHAR 100): Ej. "Sala 1 VIP".
 *   `capacidad` (INTEGER): Capacidad total de butacas.
 *   `estado` (VARCHAR 20): Ej. "ACTIVA", "MANTENIMIENTO".
 
 ### 2. Tabla `proyeccion` (Projection Formats)
 Catálogo estático de tipos de proyección.
-*   `proyeccion_id` (INTEGER / UUID, Primary Key)
+*   `proyeccion_id` (SERIAL / INTEGER, Primary Key)
 *   `codigo` (VARCHAR 10, Unique): Ej. "2D", "3D", "IMAX".
 *   `descripcion` (VARCHAR 100): Ej. "Proyección Digital 3D".
 
 ### 3. Tabla `funcion` (Showtimes)
 La tabla transaccional principal que une películas con salas y tiempos.
-*   `funcion_id` (UUID, Primary Key)
-*   `movie_id` (UUID): **Referencia Externa** al `Movie Service` (`db_movies.peliculas_id`). No hay foreign key nativa de base de datos directa por estar en microservicios separados.
-*   `sala_id` (UUID, Foreign Key -> `salas.sala_id`)
-*   `proyeccion_id` (INTEGER / UUID, Foreign Key -> `proyeccion.proyeccion_id`)
+*   `funcion_id` (BIGSERIAL / BIGINT, Primary Key)
+*   `movie_id` (BIGINT): **Referencia Externa** al `Movie Service` (`db_movies.peliculas_id`). No hay foreign key nativa de base de datos directa por estar en microservicios separados.
+*   `sala_id` (BIGINT, Foreign Key -> `salas.sala_id`)
+*   `proyeccion_id` (INTEGER, Foreign Key -> `proyeccion.proyeccion_id`)
 *   `fecha_inicio` (TIMESTAMP): Hora exacta de inicio.
 *   `fecha_fin` (TIMESTAMP): Calculada sumando la duración de la película + limpieza.
 *   `precio_ticket` (DECIMAL / NUMERIC): Precio base para esta función.
