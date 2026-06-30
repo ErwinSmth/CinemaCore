@@ -47,3 +47,9 @@ El panel de administración resume la operatividad del negocio basándose estric
   - `Entradas Vendidas`: Tickets en estado `SOLD` de funciones del día.
   - `Compras en Proceso`: Tickets en estado `LOCKED` (Checkout en tiempo real).
   - `Ingresos Estimados`: Entradas vendidas multiplicadas por el `precio_ticket` de la función asociada.
+
+## 6. Navegación al Detalle y Evaluación de Funciones
+- **Delegación de Lógica al Detalle**: Para mantener el Home ultrarrápido (con catálogos básicos desde Redis), no se consultan las funciones disponibles por película en la página principal. En su lugar, todas las tarjetas de películas y botones primarios ("Comprar", "Preventa") simplemente navegan a la vista de detalle (`/movies/:id`).
+- **Resolución Real**: Es la página de Detalle (`MovieDetailComponent`) quien asume la responsabilidad de interactuar con el *Showtime Service* para verificar la disponibilidad.
+  - Si el servicio retorna funciones (incluso para películas en `PRE-ESTRENO`), se habilita y muestra el módulo de compra de entradas (Preventa activa).
+  - Si el servicio retorna un array vacío, se muestra el letrero "PRÓXIMAMENTE - La venta aún no está habilitada".

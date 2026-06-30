@@ -25,6 +25,20 @@ export class Home implements OnInit, OnDestroy {
 
   isAdmin = computed(() => this.authService.currentUserRoles().includes('ROLE_ADMINISTRADOR'));
 
+  // Search state
+  isSearchOpen = signal<boolean>(false);
+  searchQuery = signal<string>('');
+  
+  allActiveMovies = computed(() => {
+    return [...this.cartelera(), ...this.preEstrenos()];
+  });
+
+  filteredSearchMovies = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return [];
+    return this.allActiveMovies().filter(m => m.titulo.toLowerCase().includes(query));
+  });
+
   // Hero Banner state
   heroIndex = signal<number>(0);
   private heroTimer: any;
@@ -164,5 +178,22 @@ export class Home implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
+  }
+
+  // Search handlers
+  openSearch() {
+    this.isSearchOpen.set(true);
+    // document.body.style.overflow = 'hidden'; // Optional: disable scrolling
+  }
+
+  closeSearch() {
+    this.isSearchOpen.set(false);
+    this.searchQuery.set('');
+    // document.body.style.overflow = '';
+  }
+
+  onSearchInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
   }
 }

@@ -21,6 +21,22 @@ export interface TmdbMovie {
   poster_path?: string;
 }
 
+export interface MovieDetailResponse {
+  id: number;
+  titulo: string;
+  sinopsis: string;
+  duracion_min: number;
+  fecha_estreno?: string;
+  estado: string;
+  restriccion_edad: string;
+  poster_path: string;
+  backdrop_path?: string;
+  director?: string;
+  actores?: string[];
+  generos?: string[];
+  trailers?: string[];
+}
+
 export interface Movie {
   id: number;
   tmdbId: number;
@@ -112,5 +128,9 @@ export class MovieService {
 
   deleteMovie(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
+  }
+
+  getMovieById(id: number): Observable<MovieDetailResponse> {
+    return this.http.get<MovieDetailResponse>(`${this.API_URL}/${id}`);
   }
 }

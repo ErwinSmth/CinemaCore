@@ -21,5 +21,9 @@ export const routes: Routes = [
     ]
   },
   { path: 'taquilla', component: TaquillaDashboard, canActivate: [taquillaGuard] },
+  { 
+    path: 'movies/:id', 
+    loadComponent: () => import('./features/public/movie-detail/movie-detail.component').then(m => m.MovieDetailComponent) 
+  },
   { path: '**', redirectTo: '' }
 ];
